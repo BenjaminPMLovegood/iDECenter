@@ -1,0 +1,27 @@
+{
+  "name": "idecenter",
+  "version": "0.1.0",
+  "description": "iCenter WebIDE (advanced)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BenjaminPMLovegood/iDECenter.git"
+  },
+  "keywords": [
+    "WebIDE",
+    "Cloud9",
+    "iCenter"
+  ],
+  "author": "Benjamin P.M. Lovegood",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/BenjaminPMLovegood/iDECenter/issues"
+  },
+  "homepage": "https://github.com/BenjaminPMLovegood/iDECenter#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
