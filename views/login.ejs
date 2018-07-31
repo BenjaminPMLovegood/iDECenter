@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <% include head %>
+    </head>
+    <body>
+        idec login
+        <p>Username:<input type="text" id="username"/></p>
+        <p>Password:<input type="text" id="password"/></p>
+        <button onclick="$.StandardPost('/login_gate', { username : $('#username').val(), password : hex_sha1($('#password').val()) });">Login</button>
+        <%= err %>
+    </body>
+</html>
