@@ -1,5 +1,5 @@
 $.extend({
-    StandardPost : function(url, args) {
+    postjump : function(url, args) {
         var form = $("<form method='POST'/>");
         form.attr({"action":url});
         $.each(args, function(key, value) {
