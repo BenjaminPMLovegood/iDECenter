@@ -7,13 +7,17 @@ const
     cookieParser = require("cookie-parser"),
     passport = require("passport"),
     LocalStrategy = require("passport-local").Strategy,
-    sha1 = require("./scripts/sha1"),
-    salt = require("./salt")
     sqlite3 = require("sqlite3"),
 
     db = new sqlite3.Database("db.sqlite3"),
 
     app = express();
+
+// submodules
+const
+    sha1 = require("./scripts/sha1"),
+    salt = require("./private_scripts/salt"),
+    usernameCheck = require("./scripts/usernamecheck");
 
 // config
 const
@@ -50,7 +54,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/scripts", express.static("scripts"));
 
 /* used to insert user 
-passport.use("mem", new LocalStrategy(
+passport.use("login", new LocalStrategy(
     function (username, password, done) {
         var user = {
             id: "1",
@@ -77,8 +81,10 @@ passport.use("mem", new LocalStrategy(
 ));
 */
 
-passport.use("mem", new LocalStrategy(
+passport.use("login", new LocalStrategy(
     function (username, password, done) {
+        if (!usernameCheck(username)) return done(null, false, { message: "Invalid username." })
+
         var newPassword = sha1(salt(username, password));
 
         var stmt = db.prepare("SELECT id, username, password FROM users WHERE username = ? AND password = ?");
@@ -90,6 +96,28 @@ passport.use("mem", new LocalStrategy(
             }
         });
         stmt.finalize();
+    }
+));
+
+passport.use("register", new LocalStrategy(
+    function (username, password, done) {
+        if (!usernameCheck(username)) return done(null, false, { message: "Invalid username." })
+
+        var stmt = db.prepare("INSERT INTO users(username, password) VALUES (?, ?)");
+        stmt.run(username, sha1(salt(username, password)));
+        stmt.finalize();
+
+        user.password = password;
+        return done(null, { username : username, password : password });
+
+        if (username !== user.username) {
+            return done(null, false, { message: "Incorrect username." });
+        }
+        if (password !== user.password) {
+            return done(null, false, { message: "Incorrect password." });
+        }
+
+        return done(null, user);
     }
 ));
 
@@ -111,7 +139,21 @@ app.get("/login", function(req, res) {
     res.render("login", { title : "Login" });
 });
 
-app.post("/login_gate", passport.authenticate("mem", {
+app.post("/register_gate", function(req, res, next) {
+    if (req.isAuthenticated()) return next();
+    req.flash("error", "You're not logged in.")
+    res.redirect("/login");
+}, function(req, res, next) {
+    if (req.session.passport.username === "admin") return next();
+    req.flash("error", "You're not permitted to do this.")
+    res.redirect("/login");
+}, passport.authenticate("register", {
+    successRedirect: "/register",
+    failureRedirect: "/register",
+    failureFlash: true
+}));
+
+app.post("/login_gate", passport.authenticate("login", {
     successRedirect: "/api/test",
     failureRedirect: "/login",
     failureFlash: true
@@ -122,7 +164,7 @@ app.all("/logout_gate", function(req, res) {
     res.redirect("/");
 })
 
-app.all("/api/*", function(req, res, next) {
+app.all(/\/(api|pages)\/.*/, function(req, res, next) {
     if (req.isAuthenticated()) return next();
     req.flash("error", "You're not logged in.")
     res.redirect("/login");
@@ -132,13 +174,7 @@ app.get("/api/*", function(req, res) {
     res.send("api \"" + req.url + "\" called by " + req.session.passport.user.username);
 });
 
-app.all("/pages/*", function(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    req.flash("error", "You're not logged in.")
-    res.redirect("/login");
-});
-
-app.all("/pages/*", function(req, res) {
+app.get("/pages/*", function(req, res) {
 
 });
 

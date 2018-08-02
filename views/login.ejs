@@ -3,10 +3,21 @@
         <% include head %>
     </head>
     <body>
+        <script lang="javascript">
+        function do_login() {
+            username = $('#username').val();
+            if (checkUsername(username)) {
+                $("#login").attr("disabled", true);
+                $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1($('#password').val()) });
+            } else {
+                $("#errmsg").text("Invalid username.");
+            }
+        }
+        </script>
         idec login
         <p>Username:<input type="text" id="username"/></p>
         <p>Password:<input type="password" id="password"/></p>
-        <button onclick="$.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1($('#password').val()) });">Login</button>
-        <%= err %>
+        <button onclick="do_login();" id="login">Login</button>
+        <p id="errmsg"><%= err %></p>
     </body>
 </html>
