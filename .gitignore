@@ -76,3 +76,6 @@ typings/
 /c9/
 /template/*
 !/template/dummy
+/workspace/*
+!/workspace/dummy
+

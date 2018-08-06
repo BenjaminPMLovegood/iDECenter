@@ -1,28 +1,29 @@
 {
+    "database" : "db.sqlite3",
     "port" : "4040",
     "session" : {
         "maxAge" : 60000,
         "secret" : "gouliguojia",
         "cookie" : "idecsid"
     },
-    "c9sdk" : "./c9/",
     "c9portbase" : "4041",
+    "workspace" : "./workspace/",
     "templates" : [
-		{
-			"name": "STM32F1",
-			"path": "./template/template_stm32f1"
-		},
-		{
-			"name": "STM32F4",
-			"path": "./template/template_stm32f4"
-		},
-		{
-			"name": "STM32F1_mbed",
-			"path": "./template/mbed-stm32f1"
-		},
-		{
-			"name": "STM32F4_mbed",
-			"path": "./template/mbed-stm32f4"
-		}
+        {
+            "name": "STM32F1",
+            "path": "./template/template_stm32f1"
+        },
+        {
+            "name": "STM32F4",
+            "path": "./template/template_stm32f4"
+        },
+        {
+            "name": "STM32F1_mbed",
+            "path": "./template/mbed-stm32f1"
+        },
+        {
+            "name": "STM32F4_mbed",
+            "path": "./template/mbed-stm32f4"
+        }
     ]
 }

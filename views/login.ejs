@@ -1,6 +1,7 @@
+<!doctype html>
 <html>
     <head>
-        <% include head %>
+        <% include components/head %>
     </head>
     <body>
         <script lang="javascript">
@@ -8,7 +9,7 @@
             username = $('#username').val();
             if (checkUsername(username)) {
                 $("#login").attr("disabled", true);
-                $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1($('#password').val()) });
+                $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1(browersalt($('#username').val(), $('#password').val())) });
             } else {
                 $("#errmsg").text("Invalid username.");
             }

@@ -9,23 +9,22 @@ const
     LocalStrategy = require("passport-local").Strategy,
     sqlite3 = require("sqlite3"),
 
-    db = new sqlite3.Database("db.sqlite3"),
-
     app = express();
 
 // submodules
 const
     sha1 = require("./scripts/sha1"),
-    salt = require("./private_scripts/salt"),
-    usernameCheck = require("./scripts/usernamecheck");
+    serversalt = require("./private_scripts/server_salt"),
+    usernameCheck = require("./scripts/check_username"),
+    UserCollection = require("./classes/user");
 
 // config
+const config = require("./config.json");
+
+// models
 const
-    config = require("./config.json"),
-    c9path = config.c9sdk || "./c9/",
-    port = config.port || 4040,
-    c9baseport = config.c9baseport || 4041,
-    sessionConf = config.sessionConf || { maxAge : 1000 * 60 * 10, secret : "gouliguojia", cookie : "idecsid" };
+    db = new sqlite3.Database(config.database),
+    users = new UserCollection(db);
 
 // configurate app
 app.set("trust proxy", true);
@@ -35,10 +34,10 @@ app.set("view engine", "ejs");
 // middlewares
 app.use(cookieParser());
 app.use(exsession({
-    secret : sessionConf.secret,
-    name : sessionConf.cookie,
+    secret : config.session.secret,
+    name : config.session.cookie,
     cookie : {
-        maxAge : sessionConf.maxAge,
+        maxAge : config.session.maxAge,
         httpOnly : true
     },
     resave : true,
@@ -53,71 +52,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/scripts", express.static("scripts"));
 
-/* used to insert user 
 passport.use("login", new LocalStrategy(
     function (username, password, done) {
-        var user = {
-            id: "1",
-            username: "admin",
-            password: "pass"
-        };
-
-        var stmt = db.prepare("INSERT INTO users(username, password) VALUES (?, ?)");
-        stmt.run(username, sha1(salt(username, password)));
-        stmt.finalize();
-
-        user.password = password;
-        return done(null, { username : username, password : password });
-
-        if (username !== user.username) {
-            return done(null, false, { message: "Incorrect username." });
-        }
-        if (password !== user.password) {
-            return done(null, false, { message: "Incorrect password." });
-        }
-
-        return done(null, user);
-    }
-));
-*/
-
-passport.use("login", new LocalStrategy(
-    function (username, password, done) {
-        if (!usernameCheck(username)) return done(null, false, { message: "Invalid username." })
-
-        var newPassword = sha1(salt(username, password));
-
-        var stmt = db.prepare("SELECT id, username, password FROM users WHERE username = ? AND password = ?");
-        stmt.get(username, newPassword, function(err, row) {
-            if (typeof row !== "undefined") {
-                done(null, { id : row.id, username : row.username, password : row.password });
+        users.verify(username, password, function(user) {
+            if (user) {
+                done(null, user);
             } else {
                 done(null, false, { message: "Incorrect username or password." });
             }
         });
-        stmt.finalize();
-    }
-));
-
-passport.use("register", new LocalStrategy(
-    function (username, password, done) {
-        if (!usernameCheck(username)) return done(null, false, { message: "Invalid username." })
-
-        var stmt = db.prepare("INSERT INTO users(username, password) VALUES (?, ?)");
-        stmt.run(username, sha1(salt(username, password)));
-        stmt.finalize();
-
-        user.password = password;
-        return done(null, { username : username, password : password });
-
-        if (username !== user.username) {
-            return done(null, false, { message: "Incorrect username." });
-        }
-        if (password !== user.password) {
-            return done(null, false, { message: "Incorrect password." });
-        }
-
-        return done(null, user);
     }
 ));
 
@@ -130,6 +73,31 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
+function isAuthenticated(req, res, next) {
+    if (!req.isAuthenticated()) {
+        req.flash("error", "You're not logged in.");
+        res.redirect("/login");
+    } else {
+        return next();
+    }
+}
+
+function isAuthenticatedSuper(req, res, next) {
+    if (!req.isAuthenticated()) {
+        req.flash("error", "You're not logged in.");
+        res.redirect("/login");
+    } else {
+        users.isSuper(req.session.passport.user.username).then(s => {
+            if (!s) {
+                req.flash("error", "Permission denied.");
+                res.redirect("/login");
+            } else {
+                return next();
+            }
+        });
+    }
+}
+
 app.get("/", function(req, res) {
     res.render("index");
 });
@@ -139,7 +107,7 @@ app.get("/login", function(req, res) {
     res.render("login", { title : "Login" });
 });
 
-app.post("/register_gate", function(req, res, next) {
+app.post("/register_gate", function (req, res, next) {
     if (req.isAuthenticated()) return next();
     req.flash("error", "You're not logged in.")
     res.redirect("/login");
@@ -164,21 +132,38 @@ app.all("/logout_gate", function(req, res) {
     res.redirect("/");
 })
 
-app.all(/\/(api|pages)\/.*/, function(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    req.flash("error", "You're not logged in.")
-    res.redirect("/login");
+app.all(/\/(api|pages)\/.*/, isAuthenticated);
+
+app.all("/api/*", function(req, res, next) {
+    console.log("api \"" + req.url + "\" called by " + req.session.passport.user.username);
+    return next();
 });
 
-app.get("/api/*", function(req, res) {
-    res.send("api \"" + req.url + "\" called by " + req.session.passport.user.username);
+app.all("/api/test", isAuthenticatedSuper);
+
+app.get("/api/test", function(req, res) {
+    res.send("yes!");
 });
 
-app.get("/pages/*", function(req, res) {
+app.get("/pages/c9", function(req, res) {
+    var username = req.session.passport.user.username;
 
+    var stmt = db.prepare("SELECT projects.name, projects.port FROM users, projects WHERE users.id = projects.owner AND user.username = ?");
+    stmt.get(username, function(err, row) {
+        if (typeof row !== "undefined") {
+            res.render("c9wrapper_notrunning");
+        } else {
+            res.render("c9wrapper", { title : row.name + " - iDECenter", port : row.port })
+        }
+    });
+    stmt.finalize();
 });
 
-app.listen(port, function() {
+app.get("/pages/templates", function(req, res) {
+    res.render("pages/templates");
+});
+
+app.listen(config.port, function() {
     console.log("listening on 4040");
 });
 
