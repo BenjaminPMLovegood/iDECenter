@@ -9,25 +9,27 @@ const
     SUPER = 2;
 
 class UserCollection {
-    constructor (db) {
+    constructor(db) {
         this._db = db;
         this._userTypeCache = {};
     }
 
-    verify(username, passwordBrowserSalted, callback) {
-        if (!usernameCheck(username)) callback(void 0);
+    async verify(username, passwordBrowserSalted) {
+        return new Promise(resolve => {
+            if (!usernameCheck(username)) return resolve(void 0);
 
-        var newPassword = sha1(serverSalt(username, passwordBrowserSalted));
+            var newPassword = sha1(serverSalt(username, passwordBrowserSalted));
 
-        var stmt = this._db.prepare("SELECT id, username, super FROM users WHERE username = ? AND password = ?");
-        stmt.get(username, newPassword, function(err, row) {
-            if (typeof row !== "undefined") {
-                callback({ id : row.id, username : row.username, super : row.super });
-            } else {
-                callback(void 0);
-            }
+            var stmt = this._db.prepare("SELECT id, username, super FROM users WHERE username = ? AND password = ?");
+            stmt.get(username, newPassword, function(err, row) {
+                if (typeof row !== "undefined") {
+                    resolve({ id : row.id, username : row.username, super : row.super });
+                } else {
+                    resolve(void 0);
+                }
+            });
+            stmt.finalize();
         });
-        stmt.finalize();
     }
 
     async userExists(username) {
@@ -64,6 +66,10 @@ class UserCollection {
                 resolve(this._userTypeCache[username]);
             }
         });
+    }
+
+    async addUser(username, passwordBrowserSalted, isSuper) {
+
     }
 }
 

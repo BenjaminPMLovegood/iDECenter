@@ -79,3 +79,5 @@ typings/
 /workspace/*
 !/workspace/dummy
 
+*.tar
+

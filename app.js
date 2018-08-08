@@ -16,6 +16,7 @@ const
     sha1 = require("./scripts/sha1"),
     serversalt = require("./private_scripts/server_salt"),
     usernameCheck = require("./scripts/check_username"),
+    auths = require("./modules/auths"),
     UserCollection = require("./classes/user");
 
 // config
@@ -54,7 +55,7 @@ app.use("/scripts", express.static("scripts"));
 
 passport.use("login", new LocalStrategy(
     function (username, password, done) {
-        users.verify(username, password, function(user) {
+        users.verify(username, password).then(function(user) {
             if (user) {
                 done(null, user);
             } else {
@@ -73,98 +74,32 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
-function isAuthenticated(req, res, next) {
-    if (!req.isAuthenticated()) {
-        req.flash("error", "You're not logged in.");
-        res.redirect("/login");
-    } else {
-        return next();
-    }
-}
-
-function isAuthenticatedSuper(req, res, next) {
-    if (!req.isAuthenticated()) {
-        req.flash("error", "You're not logged in.");
-        res.redirect("/login");
-    } else {
-        users.isSuper(req.session.passport.user.username).then(s => {
-            if (!s) {
-                req.flash("error", "Permission denied.");
-                res.redirect("/login");
-            } else {
-                return next();
-            }
-        });
-    }
-}
-
-app.get("/", function(req, res) {
-    res.render("index");
-});
-
-app.get("/login", function(req, res) {
-    res.locals.err = req.flash('error');
-    res.render("login", { title : "Login" });
-});
-
-app.post("/register_gate", function (req, res, next) {
-    if (req.isAuthenticated()) return next();
-    req.flash("error", "You're not logged in.")
-    res.redirect("/login");
-}, function(req, res, next) {
-    if (req.session.passport.username === "admin") return next();
-    req.flash("error", "You're not permitted to do this.")
-    res.redirect("/login");
-}, passport.authenticate("register", {
-    successRedirect: "/register",
-    failureRedirect: "/register",
-    failureFlash: true
-}));
+app.use("/", require("./routes/root"));
 
 app.post("/login_gate", passport.authenticate("login", {
-    successRedirect: "/api/test",
+    successRedirect: "/",
     failureRedirect: "/login",
     failureFlash: true
 }));
 
-app.all("/logout_gate", function(req, res) {
-    req.logout();
-    res.redirect("/");
-})
-
-app.all(/\/(api|pages)\/.*/, isAuthenticated);
+app.all("/api/*", auths.isAuthenticatedForApi);
 
 app.all("/api/*", function(req, res, next) {
     console.log("api \"" + req.url + "\" called by " + req.session.passport.user.username);
     return next();
 });
 
-app.all("/api/test", isAuthenticatedSuper);
+app.all("/api/test", auths.isAuthenticatedSuperForApi(users));
 
 app.get("/api/test", function(req, res) {
     res.send("yes!");
 });
 
-app.get("/pages/c9", function(req, res) {
-    var username = req.session.passport.user.username;
-
-    var stmt = db.prepare("SELECT projects.name, projects.port FROM users, projects WHERE users.id = projects.owner AND user.username = ?");
-    stmt.get(username, function(err, row) {
-        if (typeof row !== "undefined") {
-            res.render("c9wrapper_notrunning");
-        } else {
-            res.render("c9wrapper", { title : row.name + " - iDECenter", port : row.port })
-        }
-    });
-    stmt.finalize();
-});
-
-app.get("/pages/templates", function(req, res) {
-    res.render("pages/templates");
-});
+app.all("/pages/*", auths.isAuthenticated);
+app.use("/pages", require("./routes/pages"));
 
 app.listen(config.port, function() {
-    console.log("listening on 4040");
+    console.log("listening on", config.port);
 });
 
 process.on('exit', function() {

@@ -3,9 +3,7 @@ LABEL maintainer="benjaminpmlee@gmail.com"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-COPY init.sh /root/init.sh
-COPY c9inst.sh /root/c9inst.sh
-COPY start.sh /root/start.sh
+ADD files.tar /root
 
 RUN /root/init.sh && /root/c9inst.sh -d /root/c9/
 
