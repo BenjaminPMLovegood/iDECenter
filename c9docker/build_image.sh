@@ -3,6 +3,7 @@ if [ -a files.tar ]; then
 fi
 
 cd files
+chmod +x *.sh
 tar cf ../files.tar *
 cd ..
 

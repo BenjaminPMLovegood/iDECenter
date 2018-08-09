@@ -5,6 +5,8 @@ apt-get update
 apt-get upgrade -y
 
 apt-get install -y apt-utils
-apt-get install -y sudo nodejs npm git g++ curl tmux
+apt-get install -y sudo nodejs npm git g++ curl tmux bash
 
 echo "registry = https://registry.npm.taobao.org" >> ~/.npmrc
+
+echo "cat /root/hint" >> /etc/profile

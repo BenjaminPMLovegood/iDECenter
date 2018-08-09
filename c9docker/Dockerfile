@@ -8,4 +8,4 @@ ADD files.tar /root
 RUN /root/init.sh && /root/c9inst.sh -d /root/c9/
 
 EXPOSE 8080
-CMD /root/start.sh
+CMD bash /root/start.sh
