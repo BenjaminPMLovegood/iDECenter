@@ -1,5 +1,5 @@
 const 
-    serverSalt = require("../private_scripts/server_salt"),
+    serverSalt = require("../modules/server_salt"),
     sha1 = require("../scripts/sha1"),
     usernameCheck = require("../scripts/check_username");
 
@@ -68,8 +68,29 @@ class UserCollection {
         });
     }
 
-    async addUser(username, passwordBrowserSalted, isSuper) {
+    async addUser(username, passwordBrowserSalted, isSuper, c9password) {
+        if (!usernameCheck(username)) return false;
 
+        return new Promise(resolve => {
+            this._getUserType(username).then(v => {
+                if (v !== NOT_EXISTS) {
+                    resolve({ succeeded : false, error : "User already exists." });
+                } else {
+                    var password = sha1(serverSalt(username, passwordBrowserSalted));
+                    var cache = this._userTypeCache;
+
+                    var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password) VALUES (?, ?, ?, ?)");
+                    stmt.run(username, password, isSuper, c9password, function(err) {
+                        if (err == undefined) resolve({ succeeded : false, error : err });
+                        else {
+                            cache[username] = isSuper ? SUPER : EXISTS;
+                            resolve({ succeeded : true });
+                        }
+                    })
+                    stmt.finalize();
+                }
+            });
+        });
     }
 }
 

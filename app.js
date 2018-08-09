@@ -14,9 +14,8 @@ const
 // submodules
 const
     sha1 = require("./scripts/sha1"),
-    serversalt = require("./private_scripts/server_salt"),
+    serversalt = require("./modules/server_salt"),
     usernameCheck = require("./scripts/check_username"),
-    auths = require("./modules/auths"),
     UserCollection = require("./classes/user");
 
 // config
@@ -74,30 +73,21 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
-app.use("/", require("./routes/root"));
+const env = { users : users, passport : passport };
+const auths = require("./modules/auths")(env);
 
-app.post("/login_gate", passport.authenticate("login", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-    failureFlash: true
-}));
+app.use("/", require("./routes/root")(env));
 
 app.all("/api/*", auths.isAuthenticatedForApi);
-
-app.all("/api/*", function(req, res, next) {
-    console.log("api \"" + req.url + "\" called by " + req.session.passport.user.username);
-    return next();
-});
-
-app.all("/api/test", auths.isAuthenticatedSuperForApi(users));
-
-app.get("/api/test", function(req, res) {
-    res.send("yes!");
-});
+app.use("/api", require("./routes/api")(env));
 
 app.all("/pages/*", auths.isAuthenticated);
-app.use("/pages", require("./routes/pages"));
+app.use("/pages", require("./routes/page")(env));
 
+app.all("/apisuper/*", auths.isAuthenticatedSuperForApi);
+app.use("/apisuper", require("./routes/apisuper")(env));
+
+// run! app, run!
 app.listen(config.port, function() {
     console.log("listening on", config.port);
 });

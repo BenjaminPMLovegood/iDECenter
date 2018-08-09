@@ -3,10 +3,18 @@
 class ProjectCollection {
     constructor(db) {
         this._db = db;
-        this._projInfo = []; //
-        /* [
-
-        ] */
+        this._projInfos = [];
+        /* 
+        [
+            {
+                name : xxx,
+                containerId : xxx,
+                ownerId : xxx,
+                ownerName : xxx
+            },
+            ......
+        ] 
+        */
     }
 }
 
