@@ -1,6 +1,7 @@
 PASS="username:password"
 
 if [ -a /root/c9auth/password ]; then
+    echo "password found. load it."
     read PASS < /root/c9auth/password
 fi
 
