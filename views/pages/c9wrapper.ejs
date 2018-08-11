@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <% include components/head %>
+        <% include ../components/head %>
         <style type="text/css">
             html,body {
                 height: 100%;
@@ -17,13 +17,11 @@
         </style>
         <script lang="javascript">
         var host = window.location.hostname;
-        var port = 
-        <%= port %>
-            ;
-        $("#c9").attr("src", "http://" + host + ":" + port + "/");
+        $("#c9").attr("src", "http://" + host + ":" + <%= port %> + "/");
         </script>
     </head>
     <body>
+        <% include ../components/nav %>
         <iframe src="about:blank" id="c9"></iframe>
     </body>
 </html>

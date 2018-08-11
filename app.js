@@ -16,7 +16,8 @@ const
     sha1 = require("./scripts/sha1"),
     serversalt = require("./modules/server_salt"),
     usernameCheck = require("./scripts/check_username"),
-    UserCollection = require("./classes/user");
+    UserCollection = require("./classes/user"),
+    ProjectCollection = require("./classes/project");
 
 // config
 const config = require("./config.json");
@@ -24,7 +25,8 @@ const config = require("./config.json");
 // models
 const
     db = new sqlite3.Database(config.database),
-    users = new UserCollection(db);
+    users = new UserCollection(db),
+    projects = new ProjectCollection(db);
 
 // configurate app
 app.set("trust proxy", true);
@@ -73,7 +75,7 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
-const env = { users : users, passport : passport };
+const env = { users : users, projects : projects, passport : passport };
 const auths = require("./modules/auths")(env);
 
 app.use("/", require("./routes/root")(env));

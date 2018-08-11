@@ -1,19 +1,18 @@
-
+const
+    docker = require("../modules/docker");
 
 class ProjectCollection {
     constructor(db) {
         this._db = db;
-        this._projInfos = [];
-        /* 
-        [
-            {
+        this._projCache = {};
+        /*
+            this._projCache[id] = {
+                id : xxx,
                 name : xxx,
-                containerId : xxx,
                 ownerId : xxx,
-                ownerName : xxx
-            },
-            ......
-        ] 
+                containerId : xxx,
+                port : xxx
+            }
         */
     }
 }

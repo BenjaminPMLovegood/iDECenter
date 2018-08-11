@@ -12,6 +12,7 @@ class UserCollection {
     constructor(db) {
         this._db = db;
         this._userTypeCache = {};
+        this._userIdCache = {};
     }
 
     async verify(username, passwordBrowserSalted) {
@@ -33,7 +34,7 @@ class UserCollection {
     }
 
     async userExists(username) {
-        if (typeof this._userTypeCache[username] !== "undefined") {
+        if (this._userTypeCache[username] !== undefined) {
             return this._userTypeCache[username] != NOT_EXISTS;
         } else {
             return ((await this._getUserType(username)) != NOT_EXISTS);
@@ -41,7 +42,7 @@ class UserCollection {
     }
 
     async isSuper(username) {
-        if (typeof this._userTypeCache[username] !== "undefined") {
+        if (this._userTypeCache[username] !== undefined) {
             return this._userTypeCache[username] == SUPER;
         } else {
             return ((await this._getUserType(username)) == SUPER);
@@ -50,20 +51,44 @@ class UserCollection {
 
     async _getUserType(username) {
         return new Promise(resolve => {
-            if (typeof this._userTypeCache[username] == "undefined") {
-                var cache = this._userTypeCache;
+            if (this._userTypeCache[username] !== undefined) {
+                resolve(this._userTypeCache[username]);
+            } else {
+                var typeCache = this._userTypeCache;
                 var stmt = this._db.prepare("SELECT super FROM users WHERE username = ?");
                 stmt.get(username, function(err, row) {
-                    if (typeof row !== "undefined") {
-                        cache[username] = row.super ? SUPER : EXISTS;
+                    if (row !== undefined) {
+                        typeCache[username] = row.super ? SUPER : EXISTS;
                     } else {
-                        cache[username] = NOT_EXISTS;
+                        typeCache[username] = NOT_EXISTS;
                     }
 
-                    resolve(cache[username]);
-                })
+                    resolve(typeCache[username]);
+                });
+            }
+        });
+    }
+
+    async getUserId(username) {
+        if (!usernameCheck(username)) return -1;
+
+        return new Promise(resolve => {
+            if (this._userIdCache[username] !== undefined) {
+                resolve(this._userIdCache[username]);
             } else {
-                resolve(this._userTypeCache[username]);
+                var idCache = this._userIdCache;
+
+                var stmt = this._db.prepare("SELECT id FROM users WHERE username = ?");
+                stmt.run(username, function(err, row) {
+                    if (row !== undefined) {
+                        idCache[username] = row.id;
+                    } else {
+                        idCache[username] = -1;
+                    }
+
+                    resolve(idCache[username]);
+                })
+                stmt.finalize();
             }
         });
     }
@@ -77,13 +102,13 @@ class UserCollection {
                     resolve({ succeeded : false, error : "User already exists." });
                 } else {
                     var password = sha1(serverSalt(username, passwordBrowserSalted));
-                    var cache = this._userTypeCache;
+                    var typeCache = this._userTypeCache;
 
                     var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password) VALUES (?, ?, ?, ?)");
                     stmt.run(username, password, isSuper, c9password, function(err) {
                         if (err == undefined) resolve({ succeeded : false, error : err });
                         else {
-                            cache[username] = isSuper ? SUPER : EXISTS;
+                            typeCache[username] = isSuper ? SUPER : EXISTS;
                             resolve({ succeeded : true });
                         }
                     })

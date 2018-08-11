@@ -50,8 +50,38 @@ module.exports.start = async function(containerId) {
     return new Promise(resolve => execWrapper(`docker start ${containerId}`, resolve));
 }
 
-// start a container exists
+// kill a running container
 // "docker kill"
 module.exports.kill = async function(containerId) {
     return new Promise(resolve => execWrapper(`docker kill ${containerId}`, resolve));
+}
+
+// delete a container exists
+// "docker rm"
+module.exports.rm = async function(containerId) {
+    return new Promise(resolve => execWrapper(`docker rm ${containerId}`, resolve));
+}
+
+module.exports.ps = async function() {
+    return new Promise(resolve => {
+        cp.exec("docker ps --no-trunc", function(err, stdout, stderr) { 
+            if (err) {
+                resolve({ result : undefined, error : obj(err, { errmsg : stderr }) });
+            } else {
+                resolve({ result : stdout.split('\n').map(m => m.split(' ')[0]).filter(m => m.length == 64) });
+            }
+        });
+    });
+}
+
+module.exports.psall = async function() {
+    return new Promise(resolve => {
+        cp.exec("docker ps --no-trunc -a", function(err, stdout, stderr) { 
+            if (err) {
+                resolve({ result : undefined, error : obj(err, { errmsg : stderr }) });
+            } else {
+                resolve({ result : stdout.split('\n').map(m => m.split(' ')[0]).filter(m => m.length == 64) });
+            }
+        });
+    });
 }

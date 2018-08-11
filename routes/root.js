@@ -1,3 +1,5 @@
+const render = require("../modules/render");
+
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
@@ -5,12 +7,12 @@ module.exports = function(env) {
 
     router.get("/", function(req, res) {
         if (req.isAuthenticated()) res.redirect("/pages/dashboard");
-        res.render("index");
+        render("index", req, res);
     });
 
     router.get("/login", function(req, res) {
         res.locals.err = req.flash('error');
-        res.render("login", { title : "Login" });
+        render("login", req, res, { title : "Login" });
     });
     
     app.post("/login_gate", passport.authenticate("login", {

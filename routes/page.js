@@ -1,3 +1,5 @@
+const render = require("../modules/render");
+
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
@@ -6,22 +8,15 @@ module.exports = function(env) {
     
     });
     
-    router.get("/c9", function(req, res) {
+    router.get("/c9/:pid", function(req, res) {
         var username = req.session.passport.user.username;
-    
-        var stmt = db.prepare("SELECT projects.name, projects.port FROM users, projects WHERE users.id = projects.owner AND user.username = ?");
-        stmt.get(username, function(err, row) {
-            if (typeof row !== "undefined") {
-                res.render("c9wrapper_notrunning");
-            } else {
-                res.render("c9wrapper", { title : row.name, port : row.port })
-            }
-        });
-        stmt.finalize();
+        var pid = req.params.pid;
+
+        
     });
     
     router.get("/templates", function(req, res) {
-        res.render("pages/templates");
+        render("pages/templates", req, res);
     });
 
     return router;
