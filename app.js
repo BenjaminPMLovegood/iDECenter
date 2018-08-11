@@ -13,9 +13,8 @@ const
 
 // submodules
 const
-    sha1 = require("./scripts/sha1"),
-    serversalt = require("./modules/server_salt"),
-    usernameCheck = require("./scripts/check_username"),
+    PathHelper = require("./modules/path_helper"),
+    WorkspaceManager = require("./modules/workspace_man"),
     UserCollection = require("./classes/user"),
     ProjectCollection = require("./classes/project");
 
@@ -26,7 +25,9 @@ const config = require("./config.json");
 const
     db = new sqlite3.Database(config.database),
     users = new UserCollection(db),
-    projects = new ProjectCollection(db);
+    projects = new ProjectCollection(db),
+    ph = new PathHelper(__dirname),
+    wm = new WorkspaceManager(ph.getPath(config.workspace));
 
 // configurate app
 app.set("trust proxy", true);
@@ -75,7 +76,7 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
-const env = { users : users, projects : projects, passport : passport };
+const env = { users : users, projects : projects, passport : passport, pathHelper : ph, workspaceManager : wm };
 const auths = require("./modules/auths")(env);
 
 app.use("/", require("./routes/root")(env));

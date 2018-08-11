@@ -1,0 +1,10 @@
+<div>
+<% if (authed) { %>
+    <p>[navbar] "<%= username %>" id: <%= uid %></p>
+    <% if (isSuper) { %>
+    <p>super</p>
+    <% } %>
+<% } else { %>
+    <p>[navbar] not logged in.</p>
+<% } %>
+</div>

@@ -24,7 +24,7 @@ module.exports = function(env) {
                 req.flash("error", "You're not logged in.");
                 res.redirect("/login");
             } else {
-                users.isSuper(req.session.passport.user.username).then(s => {
+                users.isSuper(req.session.passport.user.id).then(s => {
                     if (!s) {
                         res.status(403).send("Permission denied."); // change it to a 403 page
                     } else {
@@ -38,7 +38,7 @@ module.exports = function(env) {
             if (!req.isAuthenticated()) {
                 res.status(403).json({ error : "Not logged in." });
             } else {
-                users.isSuper(req.session.passport.user.username).then(s => {
+                users.isSuper(req.session.passport.user.id).then(s => {
                     if (!s) {
                         res.status(403).json({ error : "Permission denied." });
                     } else {

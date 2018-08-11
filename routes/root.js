@@ -6,7 +6,7 @@ module.exports = function(env) {
     var passport = env.passport;
 
     router.get("/", function(req, res) {
-        if (req.isAuthenticated()) res.redirect("/pages/dashboard");
+        // if (req.isAuthenticated()) res.redirect("/pages/dashboard");
         render("index", req, res);
     });
 
@@ -15,7 +15,7 @@ module.exports = function(env) {
         render("login", req, res, { title : "Login" });
     });
     
-    app.post("/login_gate", passport.authenticate("login", {
+    router.post("/login_gate", passport.authenticate("login", {
         successRedirect: "/",
         failureRedirect: "/login",
         failureFlash: true

@@ -3,16 +3,10 @@ const
     sha1 = require("../scripts/sha1"),
     usernameCheck = require("../scripts/check_username");
 
-const
-    NOT_EXISTS = 0,
-    EXISTS = 1,
-    SUPER = 2;
-
 class UserCollection {
     constructor(db) {
         this._db = db;
-        this._userTypeCache = {};
-        this._userIdCache = {};
+        this._userCache = {}; // null : user not exists
     }
 
     async verify(username, passwordBrowserSalted) {
@@ -33,62 +27,55 @@ class UserCollection {
         });
     }
 
-    async userExists(username) {
-        if (this._userTypeCache[username] !== undefined) {
-            return this._userTypeCache[username] != NOT_EXISTS;
+    async userExists(userId) {
+        if (this._userCache[userId] !== undefined) {
+            return this._userCache[userId] !== null;
         } else {
-            return ((await this._getUserType(username)) != NOT_EXISTS);
+            return ((await this.getUserInfo(userId)) !== null);
         }
     }
 
-    async isSuper(username) {
-        if (this._userTypeCache[username] !== undefined) {
-            return this._userTypeCache[username] == SUPER;
+    async isSuper(userId) {
+        if (this._userCache[userId] !== undefined) {
+            if (this._userCache[userId] === null) return false;
+            return this._userCache[userId].super;
         } else {
-            return ((await this._getUserType(username)) == SUPER);
+            var info = await this.getUserType(userId);
+ 
+            if (info === null) return false;
+            return info.super;
         }
     }
 
-    async _getUserType(username) {
+    async getUsername(userId) {
+        if (this._userCache[userId] !== undefined) {
+            if (this._userCache[userId] === null) return undefined;
+            return this._userCache[userId].username;
+        } else {
+            var info = await this.getUserType(userId);
+ 
+            if (info === null) return undefined;
+            return info.username;
+        }
+    }
+
+    // return null instead of undefined when required user info does not exists
+    async getUserInfo(userId) {
         return new Promise(resolve => {
-            if (this._userTypeCache[username] !== undefined) {
-                resolve(this._userTypeCache[username]);
+            if (this._userCache[userId] !== undefined) {
+                resolve(this._userCache[userId]);
             } else {
-                var typeCache = this._userTypeCache;
-                var stmt = this._db.prepare("SELECT super FROM users WHERE username = ?");
-                stmt.get(username, function(err, row) {
+                var cache = this._userCache;
+                var stmt = this._db.prepare("SELECT username, super, c9password FROM users WHERE id = ?");
+                stmt.get(userId, function(err, row) {
                     if (row !== undefined) {
-                        typeCache[username] = row.super ? SUPER : EXISTS;
+                        cache[userId] = { username : row.username, super : row.super, c9password : row.c9password };
                     } else {
-                        typeCache[username] = NOT_EXISTS;
+                        cache[userId] = null;
                     }
 
-                    resolve(typeCache[username]);
+                    resolve(cache[userId]);
                 });
-            }
-        });
-    }
-
-    async getUserId(username) {
-        if (!usernameCheck(username)) return -1;
-
-        return new Promise(resolve => {
-            if (this._userIdCache[username] !== undefined) {
-                resolve(this._userIdCache[username]);
-            } else {
-                var idCache = this._userIdCache;
-
-                var stmt = this._db.prepare("SELECT id FROM users WHERE username = ?");
-                stmt.run(username, function(err, row) {
-                    if (row !== undefined) {
-                        idCache[username] = row.id;
-                    } else {
-                        idCache[username] = -1;
-                    }
-
-                    resolve(idCache[username]);
-                })
-                stmt.finalize();
             }
         });
     }
@@ -102,13 +89,11 @@ class UserCollection {
                     resolve({ succeeded : false, error : "User already exists." });
                 } else {
                     var password = sha1(serverSalt(username, passwordBrowserSalted));
-                    var typeCache = this._userTypeCache;
 
                     var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password) VALUES (?, ?, ?, ?)");
                     stmt.run(username, password, isSuper, c9password, function(err) {
                         if (err == undefined) resolve({ succeeded : false, error : err });
                         else {
-                            typeCache[username] = isSuper ? SUPER : EXISTS;
                             resolve({ succeeded : true });
                         }
                     })

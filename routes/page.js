@@ -9,13 +9,17 @@ module.exports = function(env) {
     });
     
     router.get("/c9/:pid", function(req, res) {
-        var username = req.session.passport.user.username;
+        var uid = req.session.passport.user.id;
         var pid = req.params.pid;
 
         
     });
     
     router.get("/templates", function(req, res) {
+        render("pages/templates", req, res);
+    });
+
+    router.get("/projects", function(req, res) {
         render("pages/templates", req, res);
     });
 
