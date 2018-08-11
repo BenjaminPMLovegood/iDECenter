@@ -80,4 +80,5 @@ typings/
 !/workspace/dummy
 
 *.tar
+*.sqlite3
 
