@@ -1,10 +1,40 @@
 const express = require("express");
+const nameCheck = require("../scripts/check_username");
+
 module.exports = function(env) {
     var router = express.Router();
-    
-    router.all("/:apiname", function(req, res, next) {
-        console.log("api \"" + req.params.apiname + "\" called by " + req.session.passport.user.username);
-        res.send("api \"" + req.params.apiname + "\" called by " + req.session.passport.user.username);
+    var users = env.users, projects = env.projects, templates = env.templates;
+
+    router.post("/create_project", function(req, res) {
+        var uid = req.session.passport.user.id;
+        var template = req.body.template || "$a invalid template name$";
+        var project = req.body.project || "$a invalid project name$";
+
+        if (!nameCheck.checkProjectName(project)) return res.json({ succeeded : false, error : "Invalid project name." });
+        if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
+        if (projects.projExists(uid, project)) return res.json({ succeeded : false, error : "Project already exists." });
+
+
+    });
+
+    router.post("/launch_project", async function(req, res) {
+
+    });
+
+    router.post("/stop_project", async function(req, res) {
+
+    });
+
+    router.post("/delete_project", function(req, res) {
+
+    });
+
+    router.post("/get_templates", function(req, res) {
+        res.json(templates.names());
+    });
+
+    router.post("/get_projects", async function(req, res) {
+        res.json(await projects.queryUsersProjects(req.session.passport.user.id));
     });
 
     return router;

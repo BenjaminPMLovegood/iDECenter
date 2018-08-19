@@ -10,6 +10,7 @@ function obj(x, appends) {
 }
 
 function execWrapper(command, resolve) {
+    console.log(command);
     cp.exec(command, function(error, stdout, stderr) {
         if(error) {
             resolve({ containerId : undefined, error : obj(error, { errmsg : stderr }) });
@@ -25,10 +26,10 @@ function execWrapper(command, resolve) {
 // portMap looks like
 // [ { docker : 8080, host : 8081 }, ... ]
 // dirMap looks like
-// [ { docker : "/root/a", host : "/home/user/docker/a" }, ... ]
+// [ { docker : "/root/a", host : "/home/user/docker/a", readonly : false }, ... ]
 module.exports.run = async function(imageName, portMap, dirMap) {
     var portArgs = portMap ? portMap.map(m => `-p ${m.host}:${m.docker}`).join(" ") : "";
-    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}`).join(" ") : "";
+    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}` + (m.readonly ? ":ro" : "")).join(" ") : "";
 
     return new Promise(resolve => execWrapper(`docker run ${portArgs} ${mountArgs} -d ${imageName}`, resolve));
 }
@@ -39,7 +40,7 @@ module.exports.run = async function(imageName, portMap, dirMap) {
 // for param portMap dirMap, see function run
 module.exports.create = async function(imageName, portMap, dirMap) {
     var portArgs = portMap ? portMap.map(m => `-p ${m.host}:${m.docker}`).join(" ") : "";
-    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}`).join(" ") : "";
+    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}` + (m.readonly ? ":ro" : "")).join(" ") : "";
 
     return new Promise(resolve => execWrapper(`docker create ${portArgs} ${mountArgs} ${imageName}`, resolve));
 }

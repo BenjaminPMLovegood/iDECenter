@@ -16,7 +16,8 @@ const
     PathHelper = require("./modules/path_helper"),
     WorkspaceManager = require("./modules/workspace_man"),
     UserCollection = require("./classes/user"),
-    ProjectCollection = require("./classes/project");
+    ProjectCollection = require("./classes/project"),
+    TemplateCollection = require("./classes/template");
 
 // config
 const config = require("./config.json");
@@ -24,9 +25,10 @@ const config = require("./config.json");
 // models
 const
     db = new sqlite3.Database(config.database),
+    ph = new PathHelper(__dirname),
     users = new UserCollection(db),
     projects = new ProjectCollection(db),
-    ph = new PathHelper(__dirname),
+    templates = new TemplateCollection(config.templates, ph),
     wm = new WorkspaceManager(ph.getPath(config.workspace));
 
 // configurate app
@@ -76,7 +78,7 @@ passport.deserializeUser(function (user, done) {
 });
 
 // routes
-const env = { users : users, projects : projects, passport : passport, pathHelper : ph, workspaceManager : wm };
+const env = { users : users, projects : projects, templates : templates, passport : passport, pathHelper : ph, workspaceManager : wm };
 const auths = require("./modules/auths")(env);
 
 app.use("/", require("./routes/root")(env));

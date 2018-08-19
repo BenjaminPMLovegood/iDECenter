@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <% include ../components/head %>
+        <script>
+        window.proj = undefined;
+        window.projDiv = undefined;
+
+        function dispProjList(list) {
+            if (window.proj) window.proj.remove();
+            if (!window.projDiv) window.projDiv = $("div#proj")[0];
+
+            window.proj = $("<table border='0'>");
+            window.proj.append($(`
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>status</th>
+                </tr>
+            `));
+            for (var i in list) {
+                var p = list[i];
+                window.proj.append($(`
+                    <tr>
+                        <td>${p.id}</th>
+                        <th>${p.name}</th>
+                        <th>${p.running ? "Running" : "Stopped"}</th>
+                    </tr>
+                `));
+            }
+
+            window.proj.appendTo(window.projDiv);
+        }
+
+        function refreshProjList() {
+            $.ajax({
+                type: "POST",
+                url: "/api/get_projects",
+                dataType: 'json',
+                success:function(data) { 
+                    dispProjList(data);
+                },
+                error:function(xhr, err){ 
+                    dispProjList([]);
+                    console.log(xhr.response.JSON);
+                }
+            });
+        }
+
+        window.onload = function() { refreshProjList(); }
+        </script>
+    </head>
+    <body>
+        <% include ../components/nav %>
+        projects<br>
+        <div id="proj"/>
+    </body>
+</html>

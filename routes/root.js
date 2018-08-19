@@ -6,7 +6,7 @@ module.exports = function(env) {
     var passport = env.passport;
 
     router.get("/", function(req, res) {
-        // if (req.isAuthenticated()) res.redirect("/pages/dashboard");
+        if (req.isAuthenticated()) return res.redirect("/pages/dashboard");
         render("index", req, res);
     });
 
