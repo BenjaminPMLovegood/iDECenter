@@ -16,12 +16,17 @@
             }
         </style>
         <script lang="javascript">
-        var host = window.location.hostname;
-        $("#c9").attr("src", "http://" + host + ":" + <%= port %> + "/");
+        window.onload = function() {
+            var host = window.location.hostname;
+            $("#c9").attr("src", "http://" + host + ":" + <%= port %> + "/");
+
+            setInterval(function() {
+                $.post("/api/do_nothing");
+            }, 10000);
+        }
         </script>
     </head>
     <body>
-        <% include ../components/nav %>
         <iframe src="about:blank" id="c9"></iframe>
     </body>
 </html>

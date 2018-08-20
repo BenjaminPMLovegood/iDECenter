@@ -12,18 +12,25 @@ module.exports = function(env) {
     router.get("/c9/:pid", function(req, res) {
         var uid = req.session.passport.user.id;
         var pid = req.params.pid;
-        var cid = req.queryContainerId(pid);
 
-        if (!projects.isRunning(cid)) {
+        projects.queryProjectInfo(pid).then(info => {
+            if (!info) return render("pages/c9wrapper_err", req, res, { err : "not_exists" });
 
-        }
+            var cid = info.containerId;
+            var oid = info.owner;
+
+            if (oid != uid) return render("pages/c9wrapper_err", req, res, { err : "not_yours" });
+
+            if (!projects.isCidRunning(cid)) {
+                render("pages/c9wrapper_err", req, res, { err : "not_running" });
+            } else {
+                render("pages/c9wrapper", req, res, { port : info.port, title : info.name });
+            }
+        })
+
     });
     
     router.get("/templates", function(req, res) {
-        render("pages/templates", req, res);
-    });
-
-    router.get("/projects", function(req, res) {
         render("pages/templates", req, res);
     });
 

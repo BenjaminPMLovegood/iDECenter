@@ -16,6 +16,7 @@
                     <th>id</th>
                     <th>name</th>
                     <th>status</th>
+                    <th></th>
                 </tr>
             `));
             for (var i in list) {
@@ -25,6 +26,7 @@
                         <td>${p.id}</th>
                         <th>${p.name}</th>
                         <th>${p.running ? "Running" : "Stopped"}</th>
+                        <th>${p.running ? `<a href="/pages/c9/${p.id}">Open</a>` : "<p>Open</p>"}</th>
                     </tr>
                 `));
             }
@@ -34,13 +36,13 @@
 
         function refreshProjList() {
             $.ajax({
-                type: "POST",
-                url: "/api/get_projects",
-                dataType: 'json',
-                success:function(data) { 
+                type : "POST",
+                url : "/api/get_projects",
+                dataType : 'json',
+                success : function(data) { 
                     dispProjList(data);
                 },
-                error:function(xhr, err){ 
+                error : function(xhr, err) { 
                     dispProjList([]);
                     console.log(xhr.response.JSON);
                 }

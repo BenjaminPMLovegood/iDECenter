@@ -5,6 +5,12 @@
     </head>
     <body>
         <% include ../components/nav %>
+<% if (err == "not_running") { %>
         Required project is not running.
+<% } else if (err == "not_yours") { %>
+        You are not permitted to visit this c9 instance.
+<% } else if (err == "not_exists") { %>
+        Wrong pid.
+<% } %>
     </body>
 </html>

@@ -33,12 +33,35 @@ class ProjectCollection {
                         userCache[uid] = [];
                     } else {
                         userCache[uid] = rows.map(function(row) { 
-                            return { id : row.id, name : row.name, containerId : row.containerId, port : row.port, running : realthis.isCidRunning(row.containerId) }
+                            return { 
+                                id : row.id, 
+                                name : row.name, 
+                                containerId : row.containerId, 
+                                port : row.port, 
+                                running : realthis.isCidRunning(row.containerId) 
+                            };
                         });
                     }
     
                     resolve(userCache[uid]);
                 });
+            });
+        });
+    }
+
+    async queryProjectInfo(pid) {
+        return new Promise(resolve => {
+            var realthis = this;
+            this._db.get("SELECT name, containerId, owner, port FROM projects WHERE id = ?", pid, function(err, row) {
+                if (err || !row) resolve(undefined);
+                else {
+                    resolve({
+                        name : row.name,
+                        containerId : row.containerId,
+                        owner : row.owner,
+                        port : row.port
+                    });
+                }
             });
         });
     }

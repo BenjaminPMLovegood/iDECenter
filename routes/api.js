@@ -8,7 +8,7 @@ module.exports = function(env) {
     router.post("/create_project", function(req, res) {
         var uid = req.session.passport.user.id;
         var template = req.body.template || "$a invalid template name$";
-        var project = req.body.project || "$a invalid project name$";
+        var projectName = req.body.project || "$a invalid project name$";
 
         if (!nameCheck.checkProjectName(project)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
@@ -35,6 +35,11 @@ module.exports = function(env) {
 
     router.post("/get_projects", async function(req, res) {
         res.json(await projects.queryUsersProjects(req.session.passport.user.id));
+    });
+
+    // do nothing, just refresh cookie
+    router.all("/do_nothing", function(req, res) {
+        res.json({ kasugano : "sora" });
     });
 
     return router;

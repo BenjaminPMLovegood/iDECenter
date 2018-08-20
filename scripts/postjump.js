@@ -8,6 +8,6 @@ $.extend({
 
         form.appendTo(document.body);
         form.submit();
-        document.body.removeChild(form[0]);
+        form.remove();
     }
 });
