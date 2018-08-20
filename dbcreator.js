@@ -27,7 +27,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE projects (
-    id          INTEGER      PRIMARY KEY
+    id          INTEGER      PRIMARY KEY ASC ON CONFLICT ROLLBACK AUTOINCREMENT
                              UNIQUE
                              NOT NULL,
     name        VARCHAR (32) NOT NULL,
