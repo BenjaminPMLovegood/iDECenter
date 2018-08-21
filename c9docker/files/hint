@@ -1,5 +1,7 @@
-You think you've got the server, when you find that tempting '#' here?
-This is just a sandbox. The only thing valuable here is your code.
-DO NOT risk your own project doing things completely meaningless.
-So if you have done something like "rm -rf /",
-TURN YOURSELF IN YOUR PROFESSER FOR HELP.
+Yes, this is a terminal. But before you type any command here, please read some facts here:
+ - This is just a sandbox. The only thing valuable here is YOUR OWN code.
+ - We have NO backup for your code. If you delete some file here, nobody will be able to get it back.
+ - This sandbox WON'T be reset when you log out.
+ - This sandbox WON'T be reset even if you know the password of this sandbox and manually shut it down.
+So BE CAREFUL!
+Contact your professor if you need help.

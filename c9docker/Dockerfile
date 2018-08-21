@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND noninteractive
 
 ADD files.tar /root
 
-RUN /root/init.sh && /root/c9inst.sh -d /root/c9/
+RUN /root/init.sh
 
 EXPOSE 8080
 CMD bash /root/start.sh

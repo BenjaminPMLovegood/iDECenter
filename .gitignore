@@ -82,3 +82,4 @@ typings/
 *.tar
 *.sqlite3
 
+*.shadow
