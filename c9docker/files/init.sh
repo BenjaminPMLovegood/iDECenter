@@ -20,7 +20,20 @@ apt-get update
 apt-get upgrade -y
 
 apt-get install -y apt-utils
-apt-get install -y sudo nodejs npm git g++ curl tmux 
+apt-get install -y sudo nodejs npm git g++ curl tmux wget python3 python3-pip
+
+echo "installing gcc-arm-none-eabi and mbed-cli..."
+apt-get install -y gcc-arm-none-eabi mercurial
+cd $userdir
+wget "http://geminilab.moe/static/gcc-arm-none-eabi.tar.bz2"
+tar xf gcc-arm-none-eabi.tar.bz2
+rm gcc-arm-none-eabi.tar.bz2
+gccarmpath=$(ls -l | egrep ^d.*gcc.*$ | awk '{print $NF}')
+chown -R $username $gccarmpath
+echo "export PATH=$userdir/$gccarmpath/bin:\$PATH" >> /etc/profile
+cd /root/
+
+pip3 install mbed-cli
 
 echo "writing entry script..."
 echo "PASS=\"username:password\""                > /root/start.sh
@@ -47,3 +60,4 @@ sudo -i -u $username bash $userdir/c9inst.sh -d $userdir/c9/
 
 rm $userdir/c9inst.sh
 rm /root/init.sh
+
