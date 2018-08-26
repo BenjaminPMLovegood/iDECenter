@@ -13,72 +13,61 @@
             "name" : "STM32F1",
             "root" : {
                 "path" : "./template/template_stm32f1",
-                "shared" : true,
-                "readonly" : true,
-                "child" : [
-                    {
-                        "path" : "inc",
-                        "shared" : false                        
-                    },
-                    {
-                        "path" : "src",
-                        "shared" : false                        
-                    }
-                ]
+                "shared" : false,
+                "shared_comment" : "false is default"
             }
         },
         {
             "name" : "STM32F4",
             "root" : {
-                "path" : "./template/template_stm32f4",
-                "shared" : true,
-                "readonly" : true,
-                "child" : [
-                    {
-                        "path" : "inc",
-                        "shared" : false                        
-                    },
-                    {
-                        "path" : "src",
-                        "shared" : false                        
-                    }
-                ]
+                "path" : "./template/template_stm32f4"
             }
         },
         {
             "name" : "STM32F1_mbed",
             "root" : {
                 "path" : "./template/mbed-stm32f1",
-                "shared" : true,
-                "readonly" : true,
-                "child" : [
-                    {
-                        "path" : "inc",
-                        "shared" : false                        
+                "sub" : {
+                    "mbed-os" : {
+                        "path" : "./template/mbed-stm32f1/mbed-os",
+                        "shared" : true,
+                        "readonly" : true,
+                        "readonly_comment" : "readonly will take no effect when shared = false"
                     },
-                    {
-                        "path" : "src",
-                        "shared" : false                        
+                    "BUILD" : {
+                        "path" : "./template/mbed-stm32f1/BUILD",
+                        "sub" : {
+                            "mbed-os" : {
+                                "path" : "./template/mbed-stm32f1/BUILD/mbed-os",
+                                "shared" : true,
+                                "readonly" : true
+                            }
+                        }
                     }
-                ]
+                }
             }
         },
         {
             "name" : "STM32F4_mbed",
             "root" : {
                 "path" : "./template/mbed-stm32f4",
-                "shared" : true,
-                "readonly" : true,
-                "child" : [
-                    {
-                        "path" : "inc",
-                        "shared" : false                        
+                "sub" : {
+                    "mbed-os" : {
+                        "path" : "./template/mbed-stm32f4/mbed-os",
+                        "shared" : true,
+                        "readonly" : true
                     },
-                    {
-                        "path" : "src",
-                        "shared" : false                        
+                    "BUILD" : {
+                        "path" : "./template/mbed-stm32f4/BUILD",
+                        "sub" : {
+                            "mbed-os" : {
+                                "path" : "./template/mbed-stm32f4/BUILD/mbed-os",
+                                "shared" : true,
+                                "readonly" : true
+                            }
+                        }
                     }
-                ]
+                }
             }
         }
     ]

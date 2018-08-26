@@ -4,7 +4,7 @@ const
 class ProjectCollection {
     constructor(db, baseport) {
         this._db = db;
-        this._baseport = baseport;
+        this.baseport = baseport;
 
         this._userCache = {};
         this._RunningCids = [];
@@ -20,6 +20,15 @@ class ProjectCollection {
         return this._RunningCids = (await docker.ps()).result || [];
     }
 
+    startDaemon() {
+        var realthis = this;
+        this._daemon = setInterval(function() { realthis.refreshRunningStatus(); }, 5000);
+    }
+
+    closeDaemon() {
+        if (this._daemon) clearInterval(this._daemon);
+    }
+
     async queryUsersProjects(uid) {
         // close caching temporarily
         // if (this._userCache[uid]) return this._userCache[uid];
@@ -27,24 +36,23 @@ class ProjectCollection {
         return new Promise(resolve => {
             var userCache = this._userCache;
             var realthis = this;
-            this.refreshRunningStatus().then(idontcare => {
-                realthis._db.all("SELECT id, name, containerId, port FROM projects WHERE owner = ?", uid, function(err, rows) {
-                    if (err) {
-                        userCache[uid] = [];
-                    } else {
-                        userCache[uid] = rows.map(function(row) { 
-                            return { 
-                                id : row.id, 
-                                name : row.name, 
-                                containerId : row.containerId, 
-                                port : row.port, 
-                                running : realthis.isCidRunning(row.containerId) 
-                            };
-                        });
-                    }
-    
-                    resolve(userCache[uid]);
-                });
+            realthis._db.all("SELECT id, name, containerId, port FROM projects WHERE owner = ?", uid, function(err, rows) {
+                if (err) {
+                    userCache[uid] = [];
+                } else {
+                    userCache[uid] = rows.map(function(row) { 
+                        return { 
+                            id : row.id, 
+                            name : row.name, 
+                            containerId : row.containerId,
+                            owner : uid,
+                            port : row.port, 
+                            running : realthis.isCidRunning(row.containerId) 
+                        };
+                    });
+                }
+
+                resolve(userCache[uid]);
             });
         });
     }
@@ -56,10 +64,12 @@ class ProjectCollection {
                 if (err || !row) resolve(undefined);
                 else {
                     resolve({
+                        id : pid,
                         name : row.name,
                         containerId : row.containerId,
                         owner : row.owner,
-                        port : row.port
+                        port : row.port,
+                        running : realthis.isCidRunning(row.containerId) 
                     });
                 }
             });
@@ -104,17 +114,25 @@ class ProjectCollection {
         });
     }
 
+    async getMaxPid() {
+        return new Promise(resolve => {
+            this._db.run("SELECT MAX(id) AS maxpid FROM project", function(err, row) {
+                if (err) resolve(undefined);
+                else resolve(row.maxpid || 0);
+            });
+        });
+    }
+
     // won't do anything in file system
-    async createProjectInDB(ownerId, name, containerId) {
+    async createProjectInDB(ownerId, name, port, containerId) {
         this._userCache[ownerId] = undefined;
 
         return new Promise(resolve => {
-            var baseport = this._baseport;
             this.projExists(ownerId, name).then(v => {
                 if (v) {
                     resolve({ succeeded : false, error : "Project already exists." });
                 } else {
-                    this._db.run("INSERT INTO projects (name, owner, containerId, port) VALUES (?, ?, ?, ?)", name, ownerId, containerId, 0, function(err) {
+                    this._db.run("INSERT INTO projects (name, owner, containerId, port) VALUES (?, ?, ?, ?)", name, ownerId, containerId, port, function(err) {
                         if (err) {
                             resolve({ succeeded : false, error : err });
                         } else {
@@ -123,17 +141,9 @@ class ProjectCollection {
                                     resolve({ succeeded : false, error : err });
                                 } else {
                                     var id = row.id;
-                                    var port = baseport + id;
-        
-                                    this._db.run("UPDATE projects SET port = ? WHERE id = ?", port, id, function(err) {
-                                        if (err) {
-                                            resolve({ succeeded : false, error : err });
-                                        } else {
-                                            resolve({ succeeded : true, pid : id });
-                                        }
-                                    });
+                                    resolve({ succeeded : true, pid : id });
                                 }
-                            })
+                            });
                         }
                     });
                 }

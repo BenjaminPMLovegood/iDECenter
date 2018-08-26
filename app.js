@@ -31,6 +31,8 @@ const
     templates = new TemplateCollection(config.templates, ph),
     wm = new WorkspaceManager(ph.getPath(config.workspace));
 
+projects.startDaemon();
+
 // configurate app
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
@@ -98,6 +100,7 @@ app.listen(config.port, function() {
 });
 
 process.on('exit', function() {
+    if (projects) projects.closeDaemon();
     db.close();
     console.log("db closed");
 });
