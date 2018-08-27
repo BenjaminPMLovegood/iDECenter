@@ -20,7 +20,6 @@ apt-get update
 apt-get upgrade -y
 
 apt-get install -y apt-utils
-<<<<<<< Updated upstream
 apt-get install -y sudo nodejs npm git g++ curl tmux wget python3 python3-pip
 
 echo "installing gcc-arm-none-eabi and mbed-cli..."
@@ -35,9 +34,6 @@ echo "export PATH=$userdir/$gccarmpath/bin:\$PATH" >> /etc/profile
 cd /root/
 
 pip3 install mbed-cli
-=======
-apt-get install -y sudo nodejs npm git g++ curl tmux gcc-arm-none-eabi
->>>>>>> Stashed changes
 
 echo "writing entry script..."
 echo "PASS=\"username:password\""                > /root/start.sh
