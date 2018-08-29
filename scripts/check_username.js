@@ -3,7 +3,7 @@ function checkUsername(username) {
 }
 
 function checkProjectName(projname) {
-    return checkUsername(username);
+    return checkUsername(projname);
 }
 
 checkUsername.checkProjectName = checkProjectName;

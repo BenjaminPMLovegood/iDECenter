@@ -2,9 +2,6 @@
 <html>
     <head>
         <% include components/head %>
-    </head>
-    <body>
-        <% include components/nav %>
         <script lang="javascript">
         function do_login() {
             username = $('#username').val();
@@ -16,6 +13,9 @@
             }
         }
         </script>
+    </head>
+    <body>
+        <% include components/nav %>
         idec login
         <p>Username:<input type="text" id="username"/></p>
         <p>Password:<input type="password" id="password"/></p>

@@ -16,7 +16,7 @@
                     <th>id</th>
                     <th>name</th>
                     <th>status</th>
-                    <th></th>
+                    <th>op</th>
                 </tr>
             `));
             for (var i in list) {
@@ -26,7 +26,10 @@
                         <td>${p.id}</th>
                         <th>${p.name}</th>
                         <th>${p.running ? "Running" : "Stopped"}</th>
-                        <th>${p.running ? `<a href="/pages/c9/${p.id}">Open</a>` : "<p>Open</p>"}</th>
+                        <th>
+                        ${p.running ? `<a href="/pages/c9/${p.id}">Open</a>` : ""}
+                        ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}
+                        </th>
                     </tr>
                 `));
             }
@@ -49,12 +52,42 @@
             });
         }
 
+        function refreshButtonClicked() {
+            $('button#refresh').attr('disabled', true);
+            refreshProjList();
+            setTimeout(function() { 
+                $('button#refresh').attr('disabled', false); 
+            }, 1000);
+        }
+
         window.onload = function() { refreshProjList(); }
+
+        function projOperationSucceeded() {
+            $("p#errmsg").text("");
+            refreshProjList();
+        }
+
+        function launchProject(pid) {
+            $.post("/api/launch_project", { pid : pid }, function (data) {
+                if (data.succeeded) projOperationSucceeded();
+                else $("p#errmsg").text(error);
+            });
+        }
+
+        function stopProject(pid) {
+            $.post("/api/stop_project", { pid : pid }, function (data) {
+                if (data.succeeded) projOperationSucceeded();
+                else $("p#errmsg").text(error);
+            });
+        }
         </script>
     </head>
     <body>
         <% include ../components/nav %>
         projects<br>
-        <div id="proj"/>
+        <button id="refresh" onclick="refreshButtonClicked()">refresh</button>
+        <a href="/pages/create_project">create</a>
+        <div id="proj"></div>
+        <p id="errmsg"></p>
     </body>
 </html>

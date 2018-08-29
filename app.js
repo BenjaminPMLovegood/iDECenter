@@ -3,6 +3,7 @@ const
     express = require("express"),
     exsession = require("express-session"),
     flash = require("express-flash"),
+    rateLimit = require("express-rate-limit"),
     bodyParser = require('body-parser'),
     cookieParser = require("cookie-parser"),
     passport = require("passport"),
@@ -27,7 +28,7 @@ const
     db = new sqlite3.Database(config.database),
     ph = new PathHelper(__dirname),
     users = new UserCollection(db),
-    projects = new ProjectCollection(db),
+    projects = new ProjectCollection(db, config.c9portbase - 0), // a very "amazing" type system
     templates = new TemplateCollection(config.templates, ph),
     wm = new WorkspaceManager(ph.getPath(config.workspace));
 
@@ -86,6 +87,8 @@ const auths = require("./modules/auths")(env);
 app.use("/", require("./routes/root")(env));
 
 app.all("/api/*", auths.isAuthenticatedForApi);
+// disabled temporarily for debug
+// app.use("/api/create_project", rateLimit({ windowMs : 2 * 60 * 1000, max : 2 }));
 app.use("/api", require("./routes/api")(env));
 
 app.all("/pages/*", auths.isAuthenticated);

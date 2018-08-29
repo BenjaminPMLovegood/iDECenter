@@ -29,10 +29,10 @@ module.exports = function(env) {
         })
 
     });
-    
-    router.get("/templates", function(req, res) {
-        render("pages/templates", req, res);
-    });
+
+    router.get("/create_project", function(req, res) {
+        render("pages/create_project", req, res, { title : "Create new project" });
+    })
 
     return router;
 }

@@ -4,7 +4,7 @@ const
 class ProjectCollection {
     constructor(db, baseport) {
         this._db = db;
-        this.baseport = baseport;
+        this._baseport = baseport;
 
         this._userCache = {};
         this._RunningCids = [];
@@ -22,11 +22,16 @@ class ProjectCollection {
 
     startDaemon() {
         var realthis = this;
+        realthis.refreshRunningStatus(); // do it once
         this._daemon = setInterval(function() { realthis.refreshRunningStatus(); }, 5000);
     }
 
     closeDaemon() {
         if (this._daemon) clearInterval(this._daemon);
+    }
+
+    getBaseport() {
+        return this._baseport;
     }
 
     async queryUsersProjects(uid) {
@@ -108,7 +113,7 @@ class ProjectCollection {
         if (!ownerId || !projName) return false;
 
         return new Promise(resolve => {
-            this._db.get("SELECT id FROM projects WHERE ownerId = ? AND name = ?", ownerId, projName, function(err, row) {
+            this._db.get("SELECT id FROM projects WHERE owner = ? AND name = ?", ownerId, projName, function(err, row) {
                 resolve(row != undefined);
             });
         });
@@ -116,7 +121,7 @@ class ProjectCollection {
 
     async getMaxPid() {
         return new Promise(resolve => {
-            this._db.run("SELECT MAX(id) AS maxpid FROM project", function(err, row) {
+            this._db.get("SELECT MAX(id) AS maxpid FROM projects", function(err, row) {
                 if (err) resolve(undefined);
                 else resolve(row.maxpid || 0);
             });
@@ -128,15 +133,16 @@ class ProjectCollection {
         this._userCache[ownerId] = undefined;
 
         return new Promise(resolve => {
-            this.projExists(ownerId, name).then(v => {
+            var realthis = this;
+            realthis.projExists(ownerId, name).then(v => {
                 if (v) {
                     resolve({ succeeded : false, error : "Project already exists." });
                 } else {
-                    this._db.run("INSERT INTO projects (name, owner, containerId, port) VALUES (?, ?, ?, ?)", name, ownerId, containerId, port, function(err) {
+                    realthis._db.run("INSERT INTO projects (name, owner, containerId, port) VALUES (?, ?, ?, ?)", name, ownerId, containerId, port, function(err) {
                         if (err) {
                             resolve({ succeeded : false, error : err });
                         } else {
-                            this._db.get("SELECT id FROM projects WHERE owner = ? AND name = ?", ownerId, name, function(err, row) {
+                            realthis._db.get("SELECT id FROM projects WHERE owner = ? AND name = ?", ownerId, name, function(err, row) {
                                 if (err) {
                                     resolve({ succeeded : false, error : err });
                                 } else {

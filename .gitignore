@@ -72,6 +72,8 @@ typings/
 # Serverless directories
 .serverless
 
+.vscode/
+
 .c9/
 /c9/
 /template/*

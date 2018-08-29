@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <% include ../components/head %>
+        <script lang="javascript">
+        function load_templates() {
+            templateSelect = $("select#templates")[0];
+
+            $.post("/api/get_templates", function(data) {
+                for (var i in data) {
+                    var temp = data[i];
+                    $(`<option value="${temp}">${temp}</option>`).appendTo(templateSelect);
+                }
+            });
+        }
+
+        window.onload = function() {
+            load_templates();
+        }
+
+        function do_create() {
+            $("p#errmsg").text("");
+            
+            projectName = $("input#username").val();
+            templateName = $("select#templates").val();
+
+            if (!checkProjectName(projectName)) return $("p#errmsg").text("invalid project name");
+
+            $("button#create").attr("disabled", true);
+            failed = function(err) {
+                $("p#errmsg").text(err);
+                $("button#create").attr("disabled", false);
+            }
+
+            succeeded = function() {
+                window.location.href = "/";
+            }
+            
+            $.ajax({ 
+                cache : false,
+                data : { template : templateName, project : projectName },
+                error : (xhr, msg) => failed(xhr.responseText),
+                success : (result) => result.succeeded ? succeeded() : failed(result.error),
+                url : "/api/create_project",
+                type : "POST"
+            });
+        }
+        </script>
+    </head>
+    <body>
+        <% include ../components/nav %>
+        create project<br>
+        <p>Project name:<input type="text" id="username"/></p>
+        <p>Template:<select id="templates"></select></p>
+        <button onclick="do_create();" id="create">Create</button>
+        <p id="errmsg"></p>
+    </body>
+</html>

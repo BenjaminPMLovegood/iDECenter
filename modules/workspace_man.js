@@ -7,7 +7,16 @@ class WorkspaceManager {
         this._workspace = workspace;
     }
 
-    ensureUserDir(username, c9password, rewritePassword) {
+    ensureUserDir(username) {
+        var userDir = path.join(this._workspace, username + "/");
+        if (!fs.existsSync(userDir)) {
+            fs.mkdirSync(userDir);
+        }
+
+        return userDir;
+    }
+
+    ensureAuthDir(username, c9password, rewritePassword) {
         var userDir = path.join(this._workspace, username + "/");
         if (!fs.existsSync(userDir)) {
             fs.mkdirSync(userDir);
@@ -23,7 +32,7 @@ class WorkspaceManager {
             fs.writeFileSync(authFile, `${username}:${c9password}`, { encoding : "ascii", flag : "w" });
         }
 
-        return userDir;
+        return authDir;
     }
 
     ensureProjectDir(username, projectName) {
