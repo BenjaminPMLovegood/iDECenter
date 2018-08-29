@@ -22,12 +22,12 @@ instantiateTemplate() {
     name=$1
     path=mbed-$1
     target=$2
-    echo "setup mbed $1 template..."
+    echo "setup mbed $name($target) template in $path..."
     cp -r mbed-os-example-blinky $path
     cd $path
-    $MBED toolchain ARM_GCC
     mkdir src inc
     mv main.cpp src/.
+    $MBED toolchain ARM_GCC
     $MBED export -i GCC_ARM -m $target
     echo "pre-building..."
     make -j4
@@ -45,5 +45,8 @@ instantiateTemplate stm32f1 NUCLEO_F103RB
 instantiateTemplate stm32f4 NUCLEO_F429ZI
 
 rm -r mbed-os-example-blinky
+
+#and other templates
+tar xvf template.tar
 
 echo done.

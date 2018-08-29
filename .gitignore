@@ -76,13 +76,13 @@ typings/
 
 .c9/
 /c9/
-/template/*
-!/template/dummy
-!/template/get_mbed_wb.sh
+/template/mbed*
+/template/template_*
 /workspace/*
 !/workspace/dummy
 
-*.tar
+/c9docker/files/files.tar
 *.sqlite3
 
 *.shadow
+
