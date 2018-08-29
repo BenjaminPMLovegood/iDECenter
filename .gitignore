@@ -78,6 +78,7 @@ typings/
 /c9/
 /template/*
 !/template/dummy
+!/template/get_mbed_wb.sh
 /workspace/*
 !/workspace/dummy
 
