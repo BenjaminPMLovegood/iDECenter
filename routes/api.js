@@ -2,18 +2,15 @@ const express = require("express");
 const nameCheck = require("../scripts/check_username");
 const docker = require("../modules/docker");
 const pathHelper = require("../modules/path_helper");
-const apiDefiner = require("../modules/api_definer");
 
 const ph = new pathHelper("/workspace/");
 
 module.exports = function(env) {
     var router = express.Router();
     var users = env.users, projects = env.projects, templates = env.templates, wm = env.workspaceManager;
-    var defineApi = apiDefiner(router, env.loggers.api);
-    var defineCriticalApi = apiDefiner(router, env.loggers.api_critical);
 
     // todo: simplify this
-    defineCriticalApi("/create_project", function(req, res) {
+    router.post("/create_project", function(req, res) {
         var uid = req.session.passport.user.id;
         var template = req.body.template || "$a invalid template name$";
         var projectName = req.body.project || "$a invalid project name$";
@@ -56,7 +53,7 @@ module.exports = function(env) {
     });
 
     // todo: make super user really super
-    defineCriticalApi("/launch_project", async function(req, res) {
+    router.post("/launch_project", async function(req, res) {
         var uid = req.session.passport.user.id;
         var pid = req.body.pid;
         
@@ -73,7 +70,7 @@ module.exports = function(env) {
         });
     });
 
-    defineCriticalApi("/stop_project", async function(req, res) {
+    router.post("/stop_project", async function(req, res) {
         var uid = req.session.passport.user.id;
         var pid = req.body.pid;
         
@@ -90,20 +87,20 @@ module.exports = function(env) {
         });
     });
 
-    defineCriticalApi("/delete_project", function(req, res) {
+    router.post("/delete_project", function(req, res) {
 
     });
 
-    defineApi("/get_templates", function(req, res) {
+    router.post("/get_templates", function(req, res) {
         res.json(templates.names());
     });
 
-    defineApi("/get_projects", async function(req, res) {
+    router.post("/get_projects", async function(req, res) {
         res.json(await projects.queryUsersProjects(req.session.passport.user.id));
     });
 
     // do nothing, just refresh cookie
-    defineApi("/do_nothing", function(req, res) {
+    router.all("/do_nothing", function(req, res) {
         res.json({ kasugano : "sora" });
     });
 

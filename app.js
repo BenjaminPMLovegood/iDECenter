@@ -17,6 +17,8 @@ const
 const
     PathHelper = require("./modules/path_helper"),
     WorkspaceManager = require("./modules/workspace_man"),
+    RouterLogger = require("./modules/router_logger"),
+    GetRequester = require("./modules/get_requester"),
     UserCollection = require("./classes/user"),
     ProjectCollection = require("./classes/project"),
     TemplateCollection = require("./classes/template");
@@ -36,13 +38,13 @@ const config = require("./config.json");
 //  "database" - database
 log4js.configure({
     appenders : {
-        "console_out" : {
+        "console_all" : {
             type : "console"
         },
-        "console_gtr_info" : {
+        "console_default" : {
             type : "logLevelFilter",
             level : "INFO",
-            appender : "console_out"
+            appender : "console_all"
         },
         "logall" : {
             type : "file",
@@ -50,13 +52,12 @@ log4js.configure({
         }
     },
     categories : {
-        "default" : { appenders : [ "console_gtr_info", "logall" ], level : "ALL" },
-        "login" : { appenders : [ "console_gtr_info", "logall" ], level : "ALL" },
-        "api" : { appenders : [ "logall" ], level : "ALL" },
-        "api_critical" : { appenders : [ "console_gtr_info", "logall" ], level : "ALL" },
-        "violate" : { appenders : [ "console_gtr_info", "logall" ], level : "ALL" },
-        "violate_super" : { appenders : [ "console_gtr_info", "logall" ], level : "ALL" },
-        "page" : { appenders : [ "logall" ], level : "ALL" },
+        "default" : { appenders : [ "console_default", "logall" ], level : "ALL" },
+        "login" : { appenders : [ "console_default", "logall" ], level : "ALL" },
+        "api_critical" : { appenders : [ "console_default", "logall" ], level : "ALL" },
+        "violate" : { appenders : [ "console_default", "logall" ], level : "ALL" },
+        "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" },
+        "request" : { appenders : [ "logall" ], level : "ALL" },
         "database" : { appenders : [ "logall" ], level : "ALL" }
     }
 });
@@ -64,11 +65,10 @@ log4js.configure({
 const loggers = {
     default : log4js.getLogger("default"),
     login : log4js.getLogger("login"),
-    api : log4js.getLogger("api"),
     api_critical : log4js.getLogger("api_critical"),
     violate : log4js.getLogger("violate"),
     violate_super : log4js.getLogger("violate_super"),
-    page : log4js.getLogger("page"),
+    request : log4js.getLogger("request"),
     database : log4js.getLogger("database")
 };
 
@@ -86,7 +86,7 @@ const
 const env = { users : users, projects : projects, templates : templates, passport : passport, pathHelper : ph, workspaceManager : wm, loggers : loggers };
 projects.startDaemon();
 
-// configurate app
+// configure app
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
@@ -110,6 +110,8 @@ app.use(passport.session());
 app.use(flash());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(RouterLogger(loggers.request, req => `url ${req.originalUrl} requested by ${GetRequester(req)}`));
 
 app.use("/scripts", express.static("scripts"));
 
@@ -160,5 +162,6 @@ app.listen(config.port, function() {
 process.on('exit', function() {
     if (projects) projects.closeDaemon();
     db.close();
-    loggers.default.info("exited.");
+    loggers.default.info("server exiting, closing logger, goodbye");
+    log4js.shutdown();
 });

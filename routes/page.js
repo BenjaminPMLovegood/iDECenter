@@ -1,17 +1,15 @@
 const render = require("../modules/render");
-const pageDefiner = require("../modules/page_definer");
 
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
     var projects = env.projects;
-    var definePage = pageDefiner(router, env.loggers.page);
     
-    definePage("/dashboard", function(req, res) {
+    router.get("/dashboard", function(req, res) {
         render("pages/dashboard", req, res, { title : "Dashboard" });
     });
     
-    definePage("/c9/:pid", function(req, res) {
+    router.get("/c9/:pid", function(req, res) {
         var uid = req.session.passport.user.id;
         var pid = req.params.pid;
 
@@ -32,7 +30,7 @@ module.exports = function(env) {
 
     });
 
-    definePage("/create_project", function(req, res) {
+    router.get("/create_project", function(req, res) {
         render("pages/create_project", req, res, { title : "Create new project" });
     })
 
