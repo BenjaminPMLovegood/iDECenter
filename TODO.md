@@ -14,5 +14,4 @@ TODO 2018/08/30
 - [ ] storage inspector. (workspaces and docker containers)
 
 TODO 2018/09/04
-
 - [ ] a daemon for file io and docker operations.

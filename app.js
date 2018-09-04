@@ -94,8 +94,14 @@ app.use("/api", require("./routes/api")(env));
 app.all("/pages/*", auths.isAuthenticated);
 app.use("/pages", require("./routes/page")(env));
 
+app.all("/pagesuper/*", auths.isAuthenticatedSuper);
+app.use("/pagesuper", require("./routes/pagesuper")(env));
+
 app.all("/apisuper/*", auths.isAuthenticatedSuperForApi);
 app.use("/apisuper", require("./routes/apisuper")(env));
+
+// 404
+app.all("*", (req, res) => res.status(404).send("Ich kann es nicht finden."))
 
 // run! app, run!
 app.listen(config.port, function() {

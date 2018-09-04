@@ -21,7 +21,7 @@ CREATE TABLE users (
                             UNIQUE ON CONFLICT ROLLBACK,
     password   CHAR (40)    NOT NULL,
     super      BOOLEAN      NOT NULL
-                            DEFAULT (true),
+                            DEFAULT (false),
     c9password CHAR (6)     NOT NULL
                             DEFAULT [000000]
 );

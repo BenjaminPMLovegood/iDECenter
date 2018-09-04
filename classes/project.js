@@ -34,6 +34,24 @@ class ProjectCollection {
         return this._baseport;
     }
 
+    async queryAllProjects() {
+        return new Promise(resolve => {
+            var realthis = this;
+            realthis._db.all("SELECT * FROM projects", function(err, rows) {
+                resolve(rows.map(function(row) { 
+                    return { 
+                        id : row.id, 
+                        name : row.name, 
+                        containerId : row.containerId,
+                        owner : row.owner,
+                        port : row.port, 
+                        running : realthis.isCidRunning(row.containerId)
+                    };
+                }));
+            });
+        });
+    }
+
     async queryUsersProjects(uid) {
         // close caching temporarily
         // if (this._userCache[uid]) return this._userCache[uid];

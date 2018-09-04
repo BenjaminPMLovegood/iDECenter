@@ -2,7 +2,7 @@
     "database" : "db.sqlite3",
     "port" : "4040",
     "session" : {
-        "maxAge" : 60000,
+        "maxAge" : 600000,
         "secret" : "gouliguojia",
         "cookie" : "idecsid"
     },
