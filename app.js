@@ -111,7 +111,28 @@ app.use(flash());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(RouterLogger(loggers.request, req => `url ${req.originalUrl} requested by ${GetRequester(req)}`));
+critical_apis = [
+    "/apisuper/adduser",
+    "/apisuper/shutdown",
+    "/api/create_project"
+]
+
+function isCriticalApi(url) {
+    if (critical_apis.includes(url)) return true;
+
+    if (url[url.length- 1] == '/') return critical_apis.includes(url.substring(0, url.length - 1));
+    return false;
+}
+
+app.use((req, res, next) => {
+    if (isCriticalApi(req.originalUrl)) {
+        loggers.api_critical.info(`critical api ${req.originalUrl} requested by ${GetRequester(req)}`);
+    } else {
+        loggers.request.info(`url ${req.originalUrl} requested by ${GetRequester(req)}`);
+    }
+
+    return next();
+});
 
 app.use("/scripts", express.static("scripts"));
 
