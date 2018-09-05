@@ -23,6 +23,10 @@ module.exports = function(env) {
         res.json(await projects.queryAllProjects());
     });
 
+    router.post("/get_all_users", async function(req, res) {
+        res.json(await users.getAllUsers());
+    });
+
     // shutdown
     router.all("/shutdown", function(req, res) {
         process.exit(0);

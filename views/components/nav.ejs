@@ -2,7 +2,7 @@
 <% if (authed) { %>
     <p>[navbar] "<%= username %>" id: <%= uid %></p>
     <% if (isSuper) { %>
-    <p>super</p>
+    <a href="/pagesuper/index">super</a>
     <% } %>
     <a href="/logout">log out</a>
 <% } else { %>

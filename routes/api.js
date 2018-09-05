@@ -33,7 +33,7 @@ module.exports = function(env) {
                 projects.getMaxPid().then(maxid => {
                     var port = projects.getBaseport() + maxid + 1;
             
-                    docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmap).then(result => {
+                    docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmap, [ "--ulimit nproc=1024:1024" ]).then(result => {
                         if (!result.containerId) {
                             return res.json({ succeeded : false, error : "Failed to create docker container." });
                         }

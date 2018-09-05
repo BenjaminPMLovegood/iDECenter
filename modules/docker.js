@@ -38,11 +38,12 @@ module.exports.run = async function(imageName, portMap, dirMap) {
 // "docker create"
 //
 // for param portMap dirMap, see function run
-module.exports.create = async function(imageName, portMap, dirMap) {
+module.exports.create = async function(imageName, portMap, dirMap, extraArgs) {
     var portArgs = portMap ? portMap.map(m => `-p ${m.host}:${m.docker}`).join(" ") : "";
     var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}` + (m.readonly ? ":ro" : "")).join(" ") : "";
+    var extraArgsStr = extraArgs ? (typeof extraArgs == "string" ? extraArgs : extraArgs.join(" ")) : "";
 
-    return new Promise(resolve => execWrapper(`docker create ${portArgs} ${mountArgs} ${imageName}`, resolve));
+    return new Promise(resolve => execWrapper(`docker create ${portArgs} ${mountArgs} ${extraArgsStr} ${imageName}`, resolve));
 }
 
 // start a container exists

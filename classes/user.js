@@ -108,6 +108,21 @@ class UserCollection {
             });
         });
     }
+
+    async getAllUsers() {
+        return new Promise(resolve => {
+            this._db.all("SELECT id, username, super, c9password FROM users", function(err, rows) {
+                resolve(rows.map(function(row) {
+                    return {
+                        id : row.id,
+                        username : row.username,
+                        super : !!(row.super),
+                        c9password : row.c9password
+                    };
+                }));
+            });
+        });
+    }
 }
 
 module.exports = UserCollection;
