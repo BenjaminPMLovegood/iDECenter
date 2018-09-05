@@ -37,13 +37,14 @@ class ProjectCollection {
     async queryAllProjects() {
         return new Promise(resolve => {
             var realthis = this;
-            realthis._db.all("SELECT * FROM projects", function(err, rows) {
+            realthis._db.all("SELECT projects.id, projects.name, projects.containerId, projects.owner, projects.port, users.username FROM projects, users WHERE users.id = projects.owner", function(err, rows) {
                 resolve(rows.map(function(row) { 
                     return { 
                         id : row.id, 
                         name : row.name, 
                         containerId : row.containerId,
-                        owner : row.owner,
+                        oid : row.owner,
+                        owner : row.username,
                         port : row.port, 
                         running : realthis.isCidRunning(row.containerId)
                     };

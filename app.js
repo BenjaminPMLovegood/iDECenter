@@ -140,7 +140,7 @@ passport.use("login", new LocalStrategy(
     function (username, password, done) {
         users.verify(username, password).then(user => {
             if (user) {
-                loggers.login.info("user %s(%d) loggin in", user.username, user.id);
+                loggers.login.info("user %s(%d) logging in", user.username, user.id);
                 done(null, user);
             } else {
                 loggers.login.info("failed login attempt with %s:%s", username, password);

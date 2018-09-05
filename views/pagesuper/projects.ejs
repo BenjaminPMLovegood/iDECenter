@@ -15,7 +15,10 @@
                 <tr>
                     <th>id</th>
                     <th>name</th>
+                    <th>owner</th>
                     <th>status</th>
+                    <th>cid</th>
+                    <th>port</th>
                     <th>op</th>
                 </tr>
             `));
@@ -25,9 +28,11 @@
                     <tr>
                         <td>${p.id}</th>
                         <th>${p.name}</th>
+                        <th>${p.owner}</th>
                         <th>${p.running ? "Running" : "Stopped"}</th>
+                        <th>${p.containerId}</th>
+                        <th>${p.port}</th>
                         <th>
-                        ${p.running ? `<a href="/pages/c9/${p.id}">Open</a>` : ""}
                         ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}
                         </th>
                     </tr>

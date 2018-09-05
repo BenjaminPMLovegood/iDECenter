@@ -54,12 +54,13 @@ module.exports = function(env) {
 
     // todo: make super user really super
     router.post("/launch_project", async function(req, res) {
-        var uid = req.session.passport.user.id;
+        var user = req.session.passport.user;
+        var uid = user.id;
         var pid = req.body.pid;
         
         projects.queryProjectInfo(pid).then(info => {
             if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
-            if (info.owner != uid) return res.json({ succeeded : false, error : "You are not permitted to do this." });
+            if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
             if (info.running) return res.json({ succeeded : false, error : "Already running." });
 
             docker.start(info.containerId).then(result => {
@@ -71,12 +72,13 @@ module.exports = function(env) {
     });
 
     router.post("/stop_project", async function(req, res) {
-        var uid = req.session.passport.user.id;
+        var user = req.session.passport.user;
+        var uid = user.id;
         var pid = req.body.pid;
         
         projects.queryProjectInfo(pid).then(info => {
             if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
-            if (info.owner != uid) return res.json({ succeeded : false, error : "You are not permitted to do this." });
+            if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
             if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
 
             docker.kill(info.containerId).then(result => {
