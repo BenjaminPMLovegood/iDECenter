@@ -1,0 +1,1 @@
+Moved to [iDECenter/iDockerCenter](https://github.com/iDECenter/iDockerCenter).

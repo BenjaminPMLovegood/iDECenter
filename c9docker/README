@@ -1,5 +1,0 @@
-Run ./build_image.sh to build docker image.
-
-This docker image is named "idec/idec:latest".
-
-Mount workspace to "/workspace/" and a password file like "username:password" to "/root/c9auth/password".
