@@ -1,6 +1,5 @@
 const express = require("express");
 const nameCheck = require("../scripts/check_username");
-const docker = require("../modules/docker");
 const pathHelper = require("../modules/path_helper");
 
 const ph = new pathHelper("/workspace/");
@@ -8,6 +7,7 @@ const ph = new pathHelper("/workspace/");
 module.exports = function(env) {
     var router = express.Router();
     var users = env.users, projects = env.projects, templates = env.templates, wm = env.workspaceManager;
+    var docker = env.docker;
 
     // todo: simplify this
     router.post("/create_project", function(req, res) {
@@ -34,11 +34,11 @@ module.exports = function(env) {
                     var port = projects.getBaseport() + maxid + 1;
             
                     docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmap, [ "--ulimit nproc=1024:1024" ]).then(result => {
-                        if (!result.containerId) {
+                        if (!result) {
                             return res.json({ succeeded : false, error : "Failed to create docker container." });
                         }
             
-                        var cid = result.containerId;
+                        var cid = result;
                         projects.createProjectInDB(uid, projectName, port, cid).then(result => {
                             if (result.succeeded) {
                                 return res.json({ succeeded : true });
@@ -64,7 +64,7 @@ module.exports = function(env) {
             if (info.running) return res.json({ succeeded : false, error : "Already running." });
 
             docker.start(info.containerId).then(result => {
-                if (!result.containerId) return res.json({ succeeded : false, error : result.error });
+                if (!result) return res.json({ succeeded : false, error : result.error });
 
                 projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
             })
@@ -82,7 +82,7 @@ module.exports = function(env) {
             if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
 
             docker.kill(info.containerId).then(result => {
-                if (!result.containerId) return res.json({ succeeded : false, error : result.error });
+                if (!result) return res.json({ succeeded : false, error : result.error });
 
                 projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
             })

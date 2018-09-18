@@ -1,9 +1,7 @@
-const
-    docker = require("../modules/docker");
-
 class ProjectCollection {
-    constructor(db, baseport) {
-        this._db = db;
+    constructor(env, baseport) {
+        this._db = env.db;
+        this._docker = env.docker;
         this._baseport = baseport;
 
         this._userCache = {};
@@ -17,7 +15,7 @@ class ProjectCollection {
     }
 
     async refreshRunningStatus() {
-        return this._RunningCids = (await docker.ps()).result || [];
+        return this._RunningCids = (await this._docker.ps()) || [];
     }
 
     startDaemon() {

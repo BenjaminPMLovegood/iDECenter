@@ -7,11 +7,12 @@ TODO original
 
 TODO 2018/08/30
 - [ ] ui.
-- [ ] log system.
+- [ ] *ongoing* log system.
 - [ ] admin interfaces and pages.
 - [ ] better async codes.
 - [ ] a integrated install script.
-- [ ] storage inspector. (workspaces and docker containers)
+- [ ] ~~storage inspector. (workspaces and docker containers)~~
+- [ ] implement storage inspector in daemon.
 
 TODO 2018/09/04
-- [ ] a daemon for file io and docker operations.
+- [ ] *ongoing* a daemon for file io and docker operations.

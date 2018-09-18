@@ -1,4 +1,4 @@
-const cp = require("child_process");
+const dockerOpModuleName = "dockerop";
 
 function obj(x, appends) {
     var rv = {};
@@ -9,81 +9,89 @@ function obj(x, appends) {
     return rv;
 }
 
-function execWrapper(command, resolve) {
-    console.log(command);
-    cp.exec(command, function(error, stdout, stderr) {
-        if(error) {
-            resolve({ containerId : undefined, error : obj(error, { errmsg : stderr }) });
-        } else {
-            resolve({ containerId : stdout.trim() });
-        }
-    });
-}
+module.exports = function(env) {
+    daemon = env.daemon;
+    ex = {};
 
-// create a container from a specified image and start it, return the container id
-// "docker run"
-//
-// portMap looks like
-// [ { docker : 8080, host : 8081 }, ... ]
-// dirMap looks like
-// [ { docker : "/root/a", host : "/home/user/docker/a", readonly : false }, ... ]
-module.exports.run = async function(imageName, portMap, dirMap) {
-    var portArgs = portMap ? portMap.map(m => `-p ${m.host}:${m.docker}`).join(" ") : "";
-    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}` + (m.readonly ? ":ro" : "")).join(" ") : "";
-
-    return new Promise(resolve => execWrapper(`docker run ${portArgs} ${mountArgs} -d ${imageName}`, resolve));
-}
-
-// create a container from a specified image and return the container id
-// "docker create"
-//
-// for param portMap dirMap, see function run
-module.exports.create = async function(imageName, portMap, dirMap, extraArgs) {
-    var portArgs = portMap ? portMap.map(m => `-p ${m.host}:${m.docker}`).join(" ") : "";
-    var mountArgs = dirMap ? dirMap.map(m => `-v ${m.host}:${m.docker}` + (m.readonly ? ":ro" : "")).join(" ") : "";
-    var extraArgsStr = extraArgs ? (typeof extraArgs == "string" ? extraArgs : extraArgs.join(" ")) : "";
-
-    return new Promise(resolve => execWrapper(`docker create ${portArgs} ${mountArgs} ${extraArgsStr} ${imageName}`, resolve));
-}
-
-// start a container exists
-// "docker start"
-module.exports.start = async function(containerId) {
-    return new Promise(resolve => execWrapper(`docker start ${containerId}`, resolve));
-}
-
-// kill a running container
-// "docker kill"
-module.exports.kill = async function(containerId) {
-    return new Promise(resolve => execWrapper(`docker kill ${containerId}`, resolve));
-}
-
-// delete a container exists
-// "docker rm"
-module.exports.rm = async function(containerId) {
-    return new Promise(resolve => execWrapper(`docker rm ${containerId}`, resolve));
-}
-
-module.exports.ps = async function() {
-    return new Promise(resolve => {
-        cp.exec("docker ps --no-trunc", function(err, stdout, stderr) { 
-            if (err) {
-                resolve({ result : undefined, error : obj(err, { errmsg : stderr }) });
-            } else {
-                resolve({ result : stdout.split('\n').map(m => m.split(' ')[0]).filter(m => m.length == 64) });
-            }
+    function execWrapper(command, args, resolve, reject) {
+        daemon.call(dockerOpModuleName, command, args, rv => {
+            if (rv.cid) resolve(rv.cid);
+            else reject(rv.error);
         });
-    });
-}
+    }
 
-module.exports.psall = async function() {
-    return new Promise(resolve => {
-        cp.exec("docker ps --no-trunc -a", function(err, stdout, stderr) { 
-            if (err) {
-                resolve({ result : undefined, error : obj(err, { errmsg : stderr }) });
-            } else {
-                resolve({ result : stdout.split('\n').map(m => m.split(' ')[0]).filter(m => m.length == 64) });
-            }
+    // create a container from a specified image and return the container id
+    // "docker create"
+    //
+    // portMap looks like
+    // [ { docker : 8080, host : 8081 }, ... ]
+    // dirMap looks like
+    // [ { docker : "/root/a", host : "/home/user/docker/a", readonly : false }, ... ]
+    ex.create = async function(imageName, portMap, dirMap, extraArgs) {
+        return new Promise((resolve, reject) => {
+            execWrapper(
+                "create",
+                {
+                    "img" : imageName,
+                    "portmap" : portMap,
+                    "dirmap" : dirMap,
+                    "extra" : (typeof extraArgs == "string" ? extraArgs : extraArgs.join(" "))
+                },
+                resolve,
+                reject
+            );
         });
-    });
+    }
+
+    // start a container exists
+    // "docker start"
+    ex.start = async function(containerId) {
+        return new Promise((resolve, reject) => {
+            execWrapper(
+                "start",
+                {
+                    "cid" : containerId
+                },
+                resolve,
+                reject
+            );
+        });
+    }
+
+    // kill a running container
+    // "docker kill"
+    ex.kill = async function(containerId) {
+        return new Promise((resolve, reject) => {
+            execWrapper(
+                "kill",
+                {
+                    "cid" : containerId
+                },
+                resolve,
+                reject
+            );
+        });
+    }
+
+    /*
+    // delete a container exists
+    // "docker rm"
+    ex.rm = async function(containerId) {
+        return new Promise(resolve => execWrapper(`docker rm ${containerId}`, resolve));
+    }
+    */
+
+    ex.ps = async function() {
+        return new Promise((resolve, reject) => {
+            execWrapper("ps", {}, resolve, reject);
+        });
+    }
+
+    ex.psall = async function() {
+        return new Promise((resolve, reject) => {
+            execWrapper("psall", {}, resolve, reject);
+        });
+    }
+
+    return ex;
 }

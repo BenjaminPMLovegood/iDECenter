@@ -4,6 +4,7 @@ const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
     var passport = env.passport;
+    var docker = env.docker;
 
     router.get("/", function(req, res) {
         if (req.isAuthenticated()) return res.redirect("/pages/dashboard");
@@ -27,6 +28,10 @@ module.exports = function(env) {
     }).get("/logout", function(req, res) {
         req.logout();
         res.redirect("/");
+    });
+
+    router.all("/xxx", async function(req, res) {
+        res.json(await docker.psall());
     });
 
     return router;

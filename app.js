@@ -15,27 +15,26 @@ const
 
 // submodules
 const
+    Docker = require("./modules/docker"),
     PathHelper = require("./modules/path_helper"),
     WorkspaceManager = require("./modules/workspace_man"),
     RouterLogger = require("./modules/router_logger"),
     GetRequester = require("./modules/get_requester"),
     UserCollection = require("./classes/user"),
     ProjectCollection = require("./classes/project"),
-    TemplateCollection = require("./classes/template");
+    TemplateCollection = require("./classes/template"),
+    Daemon = require("./modules/daemon");
 
 // config
 const config = require("./config.json");
 
+// db
+const db = new sqlite3.Database(config.database);
+
+// env
+const env = { config : config, db : db, passport : passport };
+
 // logger
-// category:
-//  "main" - main js
-//  "login" - login, logout
-//  "api" - api calls
-//  "api_critical" - critical api calls
-//  "violate" - someone not logged in trying to call apis or request pages
-//  "violate_super" - someone not super trying to call super apis or request super pages
-//  "page" - page requests
-//  "database" - database
 log4js.configure({
     appenders : {
         "console_all" : {
@@ -52,13 +51,14 @@ log4js.configure({
         }
     },
     categories : {
-        "default" : { appenders : [ "console_default", "logall" ], level : "ALL" },
-        "login" : { appenders : [ "console_default", "logall" ], level : "ALL" },
-        "api_critical" : { appenders : [ "console_default", "logall" ], level : "ALL" },
-        "violate" : { appenders : [ "console_default", "logall" ], level : "ALL" },
-        "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" },
-        "request" : { appenders : [ "logall" ], level : "ALL" },
-        "database" : { appenders : [ "logall" ], level : "ALL" }
+        "default" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // default
+        "login" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // user login
+        "api_critical" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // access to crtical apis
+        "violate" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // not logged in
+        "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // access to super apis/pages by non-super users
+        "request" : { appenders : [ "logall" ], level : "ALL" }, // all requests
+        "database" : { appenders : [ "logall" ], level : "ALL" }, // all database ops
+        "daemon" : { appenders : [ "logall", "console_default" ], level : "ALL" } // daemon
     }
 });
 
@@ -69,22 +69,39 @@ const loggers = {
     violate : log4js.getLogger("violate"),
     violate_super : log4js.getLogger("violate_super"),
     request : log4js.getLogger("request"),
-    database : log4js.getLogger("database")
+    database : log4js.getLogger("database"),
+    daemon : log4js.getLogger("daemon")
 };
 
+env.loggers = loggers;
 loggers.default.info("logger ready");
 
-// models
-const
-    db = new sqlite3.Database(config.database),
-    ph = new PathHelper(__dirname),
-    users = new UserCollection(db),
-    projects = new ProjectCollection(db, config.c9portbase - 0), // a very "amazing" type system
-    templates = new TemplateCollection(config.templates, ph),
-    wm = new WorkspaceManager(ph.getPath(config.workspace));
+// daemon
+const daemon = new Daemon(config.daemonport, env);
+env.daemon = daemon;
 
-const env = { users : users, projects : projects, templates : templates, passport : passport, pathHelper : ph, workspaceManager : wm, loggers : loggers };
+// modules
+const docker = Docker(env);
+env.docker = docker;
+
+const ph = new PathHelper(__dirname);
+env.ph = ph;
+
+const users = new UserCollection(db);
+env.users = users;
+
+const projects = new ProjectCollection(env, config.c9portbase - 0); // a very "amazing" type system
+env.projects = projects;
+
+const templates = new TemplateCollection(config.templates, ph);
+env.templates = templates;
+
+const wm = new WorkspaceManager(ph.getPath(config.workspace));
+env.workspaceManager = wm;
+
 projects.startDaemon();
+
+loggers.default.info("modules ready");
 
 // configure app
 app.set("trust proxy", true);
@@ -182,12 +199,28 @@ app.use("/apisuper", require("./routes/apisuper")(env));
 app.all("*", (req, res) => res.status(404).send("Ich kann es nicht finden."))
 
 // run! app, run!
-app.listen(config.port, function() {
-    loggers.default.info("listening on %d...", config.port);
+loggers.default.info("launching daemon server...")
+daemon.listen(() => {
+    app.listen(config.port, function() {
+        loggers.default.info("listening on %d...", config.port);
+    });
+});
+
+loggers.default.info("launching daemon client...");
+require("child_process").exec(`${config.daemonpath} ./config.json`, (error, stdout, stderr) => {
+    if (error) {
+        loggers.daemon.error("daemon exit with code", error.code);
+        loggers.daemon.error("stderr is", stderr);
+    } else {
+        loggers.daemon.info("daemon exit normally");
+    }
+
+    loggers.daemon.info("stdout is", stdout);
 });
 
 process.on('exit', function() {
     if (projects) projects.closeDaemon();
+    daemon.close();
     db.close();
     loggers.default.info("server exiting, closing logger, goodbye");
     log4js.shutdown();

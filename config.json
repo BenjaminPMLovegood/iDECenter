@@ -1,4 +1,6 @@
 {
+    "daemonport" : "3154",
+    "daemonpath" : "dotnet iDaemonCenter.dll",
     "database" : "db.sqlite3",
     "port" : "4040",
     "session" : {
