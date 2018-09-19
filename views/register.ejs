@@ -3,11 +3,11 @@
     <head>
         <% include components/head %>
         <script lang="javascript">
-        function do_login() {
+        function do_register() {
             username = $('#username').val();
             if (checkUsername(username)) {
-                $("#login").attr("disabled", true);
-                $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1(browersalt($('#username').val(), $('#password').val())) });
+                $("#register").attr("disabled", true);
+                $.postjump('/register_gate', { username : $('#username').val(), password : hex_sha1(browersalt($('#username').val(), $('#password').val())) });
             } else {
                 $("#errmsg").text("Invalid username.");
             }
@@ -27,11 +27,13 @@
                         <label for="password">Password:</label>
                         <input type="password" class="form-control" id="password" placeholder="Enter password">
                     </div>
-                    <button class="btn btn-primary" onclick="do_login();" id="login">Login</button>
+                    <button class="btn btn-primary" onclick="do_register();" id="register">Register</button>
                     <p class="text-danger" id="errmsg"><%= err %></p>
                 </div>
                 <div class="col-md-8">
-                    <h2>再说一次欢迎给这个项目找bug并且在github上提交issue和pullrequest也可以但是请爱护自己和同学的劳动成果如果你们谁弄丢了代码或者弄坏了网站就拿来祭天</h2>
+                    <h2>注册请求一段时间内只能发起一次，注意检查好信息再提交。</h2>
+                    <h2>用户名要求只包含大小写拉丁字母，数字或下划线。项目名称要求与之相同。</h2>
+                    <h2>密码的内容没有限制，但是建议只使用ASCII字符。</h2>
                 </div>
             </div>
         </div>

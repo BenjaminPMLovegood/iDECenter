@@ -179,6 +179,8 @@ passport.deserializeUser(function (user, done) {
 const auths = require("./modules/auths")(env);
 
 loggers.default.info("loading routes...");
+
+// app.use("/register_gate", rateLimit({ windowMs : 60 * 1000, max : 1 }));
 app.use("/", require("./routes/root")(env));
 
 app.all("/api/*", auths.isAuthenticatedForApi);

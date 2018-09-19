@@ -47,6 +47,6 @@ instantiateTemplate stm32f4 NUCLEO_F429ZI
 rm -r mbed-os-example-blinky
 
 #and other templates
-tar xvf template.tar
+tar xf template.tar
 
 echo done.

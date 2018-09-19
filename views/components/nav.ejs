@@ -1,11 +1,31 @@
-<div>
+<nav class="navbar navbar-expand-md bg-light navbar-light navbar-fixed-top">
+    <ul class="navbar-nav">
+        <a class="navbar-brand" href="/">iDECenter</a>
 <% if (authed) { %>
-    <p>[navbar] "<%= username %>" id: <%= uid %></p>
+        <span class="navbar-text text-dark"><%= username %>
     <% if (isSuper) { %>
-    <a href="/pagesuper/index">super</a>
+            <sup><a class="text-primary" href="/pagesuper/index">super</a></sup>
     <% } %>
-    <a href="/logout">log out</a>
-<% } else { %>
-    <p>[navbar] not logged in.</p>
+        </span>
+        &nbsp;
+        <span class="navbar-text text-dark">c9 password: <%= c9password %></span>
 <% } %>
-</div>
+    </ul>
+    <div class="collapse navbar-collapse justify-content-end">
+        <ul class="navbar-nav">
+<% if (authed) { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Log out</a>
+            </li>
+<% } else { %>
+            <li class="nav-item">
+                <a class="nav-link" href="/register">Register</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/login">Log in</a>
+            </li>
+<% } %>
+        </ul>
+    </div>
+</nav>
+<br>

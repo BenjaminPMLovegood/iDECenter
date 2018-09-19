@@ -16,3 +16,6 @@ TODO 2018/08/30
 
 TODO 2018/09/04
 - [ ] *ongoing* a daemon for file io and docker operations.
+
+TODO 2018/09/19
+- [ ] a united error report system on webpages (flash included)

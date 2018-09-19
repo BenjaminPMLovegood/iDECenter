@@ -21,7 +21,7 @@
         function do_create() {
             $("p#errmsg").text("");
             
-            projectName = $("input#username").val();
+            projectName = $("input#projectname").val();
             templateName = $("select#templates").val();
 
             if (!checkProjectName(projectName)) return $("p#errmsg").text("invalid project name");
@@ -49,10 +49,25 @@
     </head>
     <body>
         <% include ../components/nav %>
-        create project<br>
-        <p>Project name:<input type="text" id="username"/></p>
-        <p>Template:<select id="templates"></select></p>
-        <button onclick="do_create();" id="create">Create</button>
-        <p id="errmsg"></p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2">
+                    <h1>Creat<span class="text-light">e</span><br>Project</h1>
+                    <p class="text-secondary">A valid project name is a string consists of 1~32 digits, letters and/or underlines.</p>
+                </div>
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <label for="projectname">Project name:</label>
+                        <input type="text" class="form-control" id="projectname" placeholder="Project name">
+                    </div>
+                    <div class="form-group">
+                        <label for="templates">Template:</label>
+                        <select class="form-control" id="templates"></select>
+                    </div>
+                    <button class="btn btn-primary" onclick="do_create();" id="create">Creat</button>
+                    <p class="text-danger" id="errmsg"></p>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

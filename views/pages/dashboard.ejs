@@ -10,26 +10,28 @@
             if (window.proj) window.proj.remove();
             if (!window.projDiv) window.projDiv = $("div#proj")[0];
 
-            window.proj = $("<table border='0'>");
+            window.proj = $("<table border='0' class='table'>");
             window.proj.append($(`
                 <tr>
-                    <th>id</th>
-                    <th>name</th>
-                    <th>status</th>
-                    <th>op</th>
+                    <th>Pid</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Operations</th>
                 </tr>
             `));
             for (var i in list) {
                 var p = list[i];
                 window.proj.append($(`
                     <tr>
-                        <td>${p.id}</th>
-                        <th>${p.name}</th>
-                        <th>${p.running ? "Running" : "Stopped"}</th>
-                        <th>
-                        ${p.running ? `<a href="/pages/c9/${p.id}">Open</a>` : ""}
-                        ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}
-                        </th>
+                        <td>${p.id}</td>
+                        <td>${p.name}</td>
+                        <td>
+                            <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
+                        </td>
+                        <td>
+                            ${p.running ? `<button class="btn btn-primary" onclick="window.location.href='/pages/c9/${p.id}'">Open</button>` : ""}
+                            ${!p.running ? `<button class="btn btn-success" onclick="launchProject(${p.id})">Launch project</button>` : `<button class="btn btn-danger" onclick="stopProject(${p.id})">Stop</button>`}
+                        </td>
                     </tr>
                 `));
             }
@@ -84,10 +86,19 @@
     </head>
     <body>
         <% include ../components/nav %>
-        projects<br>
-        <button id="refresh" onclick="refreshButtonClicked()">refresh</button>
-        <a href="/pages/create_project">create</a>
-        <div id="proj"></div>
-        <p id="errmsg"></p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2">
+                    <h1>Projects</h1>
+                    <button class="btn" id="refresh" onclick="refreshButtonClicked()">Refresh</button>
+                    <!-- typo? no i'm just learning linux -->
+                    <button class="btn" onclick="window.location.href='/pages/create_project';">Creat</button>
+                </div>
+                <div class="col-md-10">
+                    <div id="proj"></div>
+                    <p id="errmsg"></p>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
