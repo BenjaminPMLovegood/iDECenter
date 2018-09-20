@@ -35,7 +35,7 @@
                         "path" : "./template/mbed-stm32f1/mbed-os",
                         "shared" : true,
                         "readonly" : true,
-                        "readonly_comment" : "readonly will take no effect when shared = false"
+                        "readonly_comment" : "true is default for shared = true, and false is default to shared = false"
                     },
                     "BUILD" : {
                         "path" : "./template/mbed-stm32f1/BUILD",

@@ -18,38 +18,44 @@ module.exports = function(env) {
         if (!nameCheck.checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
 
+        var authDir = "";
+        var fmaps = [];
+
         projects.projExists(uid, projectName).then(exists => {
             if (exists) return res.json({ succeeded : false, error : "Project already exists." });
     
-            users.getUserInfo(uid).then(userInfo => {
-                wm.ensureUserDir(userInfo.username);
-                var authDir = wm.ensureAuthDir(userInfo.username, userInfo.c9password);
-                var projDir = wm.ensureProjectDir(userInfo.username, projectName);
-        
-                var fmap = templates.instantiateProjectSync(template, projDir);
-                fmap = fmap.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
-                fmap.push({ host : authDir, docker : "/root/c9auth", readonly : true });
-                
-                projects.getMaxPid().then(maxid => {
-                    var port = projects.getBaseport() + maxid + 1;
+            return users.getUserInfo(uid);
+        }).then(userInfo => {
+            wm.ensureUserDir(userInfo.username);
+            authDir = wm.ensureAuthDir(userInfo.username, userInfo.c9password);
+            var projDir = wm.ensureProjectDir(userInfo.username, projectName);
+    
+            return templates.instantiateProject(template, projDir);
+        }).then(m => {
+            m = m.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
+            m.push({ host : authDir, docker : "/root/c9auth", readonly : true });
             
-                    docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmap, [ "--ulimit nproc=1024:1024" ]).then(result => {
-                        if (!result) {
-                            return res.json({ succeeded : false, error : "Failed to create docker container." });
-                        }
-            
-                        var cid = result;
-                        projects.createProjectInDB(uid, projectName, port, cid).then(result => {
-                            if (result.succeeded) {
-                                return res.json({ succeeded : true });
-                            } else {
-                                return res.json({ succeeded : false, error : "Failed to write db." });
-                            }
-                        });
-                    });
+            fmaps = m;
+
+            return projects.getMaxPid();
+        }).then(maxid => {
+            var port = projects.getBaseport() + maxid + 1;
+    
+            docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmaps, [ "--ulimit nproc=1024:1024" ]).then(result => {
+                if (!result) {
+                    return res.json({ succeeded : false, error : "Failed to create docker container." });
+                }
+    
+                var cid = result;
+                projects.createProjectInDB(uid, projectName, port, cid).then(result => {
+                    if (result.succeeded) {
+                        return res.json({ succeeded : true });
+                    } else {
+                        return res.json({ succeeded : false, error : "Failed to write db." });
+                    }
                 });
             });
-        });
+        });;
     });
 
     // todo: make super user really super

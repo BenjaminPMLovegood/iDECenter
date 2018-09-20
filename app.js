@@ -58,7 +58,7 @@ log4js.configure({
         "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // access to super apis/pages by non-super users
         "request" : { appenders : [ "logall" ], level : "ALL" }, // all requests
         "database" : { appenders : [ "logall" ], level : "ALL" }, // all database ops
-        "daemon" : { appenders : [ "logall", "console_default" ], level : "ALL" } // daemon
+        "daemon" : { appenders : [ "logall" /*, "console_default"*/ ], level : "ALL" } // daemon
     }
 });
 
@@ -93,7 +93,7 @@ env.users = users;
 const projects = new ProjectCollection(env, config.c9portbase - 0); // a very "amazing" type system
 env.projects = projects;
 
-const templates = new TemplateCollection(config.templates, ph);
+const templates = new TemplateCollection(config.templates, env);
 env.templates = templates;
 
 const wm = new WorkspaceManager(ph.getPath(config.workspace));

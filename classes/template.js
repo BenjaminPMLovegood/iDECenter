@@ -2,38 +2,30 @@ const
     fs = require("fs"),
     path = require("path");
 
-function copyDir(source, dest) {
-    if (!fs.existsSync(dest)) fs.mkdirSync(dest);
-
-    var subs = fs.readdirSync(source);
-
-    for (var _s in subs) {
-        var s = subs[_s];
-        var subpath = path.join(source, s);
-        var destpath = path.join(dest, s);
-
-        var stat = fs.statSync(subpath);
-        if (stat.isFile()) {
-            fs.copyFileSync(subpath, destpath);
-        } else if (stat.isDirectory()) {
-            if (!fs.existsSync(destpath)) fs.mkdirSync(destpath); // if destpath exists as a File? fuck it
-
-            copyDir(subpath, destpath);
-        }
-    }
-}
-
 class TemplateCollection {
-    constructor(templates, pathHelper) {
+    constructor(templates, env) {
         this._templates = {};
-        this._pathHelper = pathHelper;
+        this._pathHelper = env.ph;
+        this._daemon = env.daemon;
 
         for (var i in templates) {
             var v = templates[i];
-            this._templates[v.name] = v.root;
+            this._templates[v.name] = this._processNode(v.root);
         }
 
         this._namesCache = templates.map(temp => temp.name);
+    }
+
+    _processNode(node) {
+        node.path = this._pathHelper.getPath(node.path);
+
+        if (node.sub) {
+            for (var i in node.sub) {
+                this._processNode(node.sub[i]);
+            }
+        }
+
+        return node;
     }
 
     names() {
@@ -44,6 +36,7 @@ class TemplateCollection {
         return templateName in this._templates;
     }
 
+    /* keep it here in case daemon doesn't work well
     // target path must be absolute
     instantiateProjectNode(conf, targetPath, relPath) {
         var rv = [];
@@ -95,6 +88,24 @@ class TemplateCollection {
         var projectDirAbs = this._pathHelper.getPath(projectDir);
         if (!fs.existsSync(projectDirAbs)) fs.mkdirSync(projectDirAbs);
         return this.instantiateProjectNode(root, projectDirAbs, ".");
+    }
+    */
+
+    async instantiateProject(templateName, projectDir) {
+        return new Promise((resolve, reject) => {
+            if (!this.templateExists(templateName)) reject("project not exists");
+
+            var root = this._templates[templateName];
+            var projectDirAbs = this._pathHelper.getPath(projectDir);
+
+            this._daemon.acall("projmgr", "instantiate", { root : root, target : projectDirAbs }).then(v => {
+                if (v.dirmap) {
+                    resolve(v.dirmap);
+                } else {
+                    reject(v.error);
+                }
+            });
+        });
     }
 }
 

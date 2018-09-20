@@ -1,14 +1,5 @@
 const dockerOpModuleName = "dockerop";
 
-function obj(x, appends) {
-    var rv = {};
-
-    for (key in x) rv[key] = x[key];
-    if (appends) for (key in appends) rv[key] = appends[key];
-
-    return rv;
-}
-
 module.exports = function(env) {
     daemon = env.daemon;
     ex = {};

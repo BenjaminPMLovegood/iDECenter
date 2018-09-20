@@ -17,6 +17,7 @@ class Daemon /* extends event.EventEmitter */ {
         this._buffer = "";
         this._sock = undefined;
         this._logger = env.loggers.daemon;
+        this._loggerdefault = env.loggers.default;
         this._callbacks = {};
 
         this._server = net.createServer(sock => {
@@ -26,7 +27,7 @@ class Daemon /* extends event.EventEmitter */ {
 
             sock.setEncoding("utf-8");
 
-            this._logger.info(`client ${sock.remoteAddress}:${sock.remotePort} connected`);
+            this._loggerdefault.info(`daemon client ${sock.remoteAddress}:${sock.remotePort} connected`);
 
             sock.on("data", data => {
                 this._buffer += data;
@@ -56,7 +57,7 @@ class Daemon /* extends event.EventEmitter */ {
 
     listen(callback) {
         this._server.listen(this._port, () => {
-            this._logger.info("daemon listening...");
+            this._loggerdefault.info("daemon listening...");
             callback();
         });
     }
