@@ -93,7 +93,7 @@ class TemplateCollection {
 
     async instantiateProject(templateName, projectDir) {
         return new Promise((resolve, reject) => {
-            if (!this.templateExists(templateName)) reject("project not exists");
+            if (!this.templateExists(templateName)) reject("template not exists");
 
             var root = this._templates[templateName];
             var projectDirAbs = this._pathHelper.getPath(projectDir);

@@ -96,7 +96,7 @@ env.projects = projects;
 const templates = new TemplateCollection(config.templates, env);
 env.templates = templates;
 
-const wm = new WorkspaceManager(ph.getPath(config.workspace));
+const wm = new WorkspaceManager(ph.getPath(config.workspace), env);
 env.workspaceManager = wm;
 
 projects.startDaemon();

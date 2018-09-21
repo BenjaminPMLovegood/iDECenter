@@ -18,18 +18,23 @@ module.exports = function(env) {
         if (!nameCheck.checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
 
+        var userInfo = {};
         var authDir = "";
+        var projDir = "";
         var fmaps = [];
 
         projects.projExists(uid, projectName).then(exists => {
             if (exists) return res.json({ succeeded : false, error : "Project already exists." });
     
             return users.getUserInfo(uid);
-        }).then(userInfo => {
-            wm.ensureUserDir(userInfo.username);
-            authDir = wm.ensureAuthDir(userInfo.username, userInfo.c9password);
-            var projDir = wm.ensureProjectDir(userInfo.username, projectName);
-    
+        }).then(ui => {
+            userInfo = ui;
+            return wm.ensureAuthDir(userInfo.username, userInfo.c9password);
+        }).then(ad => {
+            authDir = ad;
+            return wm.ensureProjectDir(userInfo.username, projectName);
+        }).then(pd => {
+            projDir = pd;
             return templates.instantiateProject(template, projDir);
         }).then(m => {
             m = m.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});

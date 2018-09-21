@@ -44,7 +44,7 @@ instantiateTemplate() {
 instantiateTemplate stm32f1 NUCLEO_F103RB
 instantiateTemplate stm32f4 NUCLEO_F429ZI
 
-rm -r mbed-os-example-blinky
+rm -rf mbed-os-example-blinky
 
 #and other templates
 tar xf template.tar

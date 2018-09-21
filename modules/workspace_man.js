@@ -3,50 +3,48 @@ const
     path = require("path");
 
 class WorkspaceManager {
-    constructor(workspace) {
+    constructor(workspace, env) {
         this._workspace = workspace;
+        this._daemon = env.daemon;
     }
 
-    ensureUserDir(username) {
-        var userDir = path.join(this._workspace, username + "/");
-        if (!fs.existsSync(userDir)) {
-            fs.mkdirSync(userDir);
-        }
+    async ensureUserDir(username) {
+        return new Promise((resolve, reject) => {
+            var arg = { "@path" : this._workspace };
+            arg[username] = { "@returnthis" : true };
 
-        return userDir;
+            this._daemon.acall("projmgr", "ensuredir", { root : arg }).then(v => {
+                if (v.path) resolve(v.path);
+                else reject(v.error);
+            });
+        });
     }
 
-    ensureAuthDir(username, c9password, rewritePassword) {
-        var userDir = path.join(this._workspace, username + "/");
-        if (!fs.existsSync(userDir)) {
-            fs.mkdirSync(userDir);
-        }
+    async ensureAuthDir(username, c9password, rewritePassword) {
+        return new Promise((resolve, reject) => {
+            var arg = { "@path" : this._workspace };
+            arg[username] = {};
+            arg[username][".auth"] = { "@returnthis" : true };
+            arg[username][".auth"]["password"] = { "@isfile" : true, "@content" : `${username}:${c9password}`, "@overwrite" : rewritePassword };
 
-        var authDir = path.join(userDir, ".auth/");
-        if (!fs.existsSync(authDir)) {
-            fs.mkdir(authDir);
-        }
-
-        var authFile = path.join(authDir, "password");
-        if (!fs.existsSync(authFile) || rewritePassword) {
-            fs.writeFileSync(authFile, `${username}:${c9password}`, { encoding : "ascii", flag : "w" });
-        }
-
-        return authDir;
+            this._daemon.acall("projmgr", "ensuredir", { root : arg }).then(v => {
+                if (v.path) resolve(v.path);
+                else reject(v.error);
+            });
+        });
     }
 
-    ensureProjectDir(username, projectName) {
-        var userDir = path.join(this._workspace, username + "/");
-        if (!fs.existsSync(userDir)) {
-            fs.mkdirSync(userDir);
-        }
+    async ensureProjectDir(username, projectName) {
+        return new Promise((resolve, reject) => {
+            var arg = { "@path" : this._workspace };
+            arg[username] = {};
+            arg[username][projectName] = { "@returnthis" : true };
 
-        var projDir = path.join(userDir, projectName + "/");
-        if (!fs.existsSync(projDir)) {
-            fs.mkdir(projDir);
-        }
-
-        return projDir;
+            this._daemon.acall("projmgr", "ensuredir", { root : arg }).then(v => {
+                if (v.path) resolve(v.path);
+                else reject(v.error);
+            });
+        });
     }
 }
 
