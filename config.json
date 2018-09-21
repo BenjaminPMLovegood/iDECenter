@@ -10,7 +10,7 @@
     },
     "c9portbase" : "4396",
     "workspace" : "./workspace/",
-    "allowregister" : true,
+    "allowregister" : false,
     "templates" : [
         {
             "name" : "STM32F1",

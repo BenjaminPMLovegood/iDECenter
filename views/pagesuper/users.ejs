@@ -10,7 +10,7 @@
             if (window.user) window.user.remove();
             if (!window.userDiv) window.userDiv = $("div#user")[0];
 
-            window.user = $("<table border='0'>");
+            window.user = $("<table border='0' class='table'>");
             window.user.append($(`
                 <tr>
                     <th>id</th>
@@ -23,10 +23,10 @@
                 var p = list[i];
                 window.user.append($(`
                     <tr>
-                        <td>${p.id}</th>
-                        <th>${p.username}</th>
-                        <th>${p.super}</th>
-                        <th>${p.c9password}</th>
+                        <td>${p.id}</td>
+                        <td>${p.username}</td>
+                        <td>${p.super}</td>
+                        <td>${p.c9password}</td>
                     </tr>
                 `));
             }
@@ -68,9 +68,17 @@
     </head>
     <body>
         <% include ../components/nav %>
-        all users<br>
-        <button id="refresh" onclick="refreshButtonClicked()">refresh</button>
-        <div id="user"></div>
-        <p id="errmsg"></p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2">
+                    <h1>Users</h1>
+                    <button class="btn" id="refresh" onclick="refreshButtonClicked()">Refresh</button>
+                </div>
+                <div class="col-md-10">
+                    <div id="user"></div>
+                    <p id="errmsg"></p>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

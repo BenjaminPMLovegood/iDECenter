@@ -26,7 +26,7 @@ const
     Daemon = require("./modules/daemon");
 
 // config
-const config = require("./config.json");
+const config = Object.assign({}, require("./config.json"));
 
 // db
 const db = new sqlite3.Database(config.database);
