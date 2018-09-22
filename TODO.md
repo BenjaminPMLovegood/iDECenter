@@ -1,21 +1,24 @@
 TODO original
-- [ ] workspace cloning when openning
-- [ ] workspace renamming
+- [ ] ~~workspace cloning when openning~~ don't need anymore
+- [ ] ~~workspace renamming~~ don't need anymore
 - [ ] ~~multi c9 instance by nginx~~
 - [x] multi c9 instance and a wrapper
 - [x] new web UI for management and template choosing
 
 TODO 2018/08/30
-- [ ] ui.
+- [x] ui.
 - [ ] *ongoing* log system.
 - [ ] admin interfaces and pages.
 - [ ] better async codes.
-- [ ] a integrated install script.
+- [x] a integrated install script.
 - [ ] ~~storage inspector. (workspaces and docker containers)~~
 - [ ] implement storage inspector in daemon.
 
 TODO 2018/09/04
-- [ ] *ongoing* a daemon for file io and docker operations.
+- [x] a daemon for file io and docker operations.
 
 TODO 2018/09/19
 - [ ] a united error report system on webpages (flash included)
+
+TODO 2018/09/23
+- [ ] extract templates to a new repository.
