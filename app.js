@@ -48,7 +48,11 @@ log4js.configure({
         "logall" : {
             type : "file",
             filename : "logall.log"
-        }
+        }/*,
+        "daemonall" : {
+            type : "file",
+            filename : "daemon.log"
+        }*/
     },
     categories : {
         "default" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // default
@@ -58,7 +62,7 @@ log4js.configure({
         "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // access to super apis/pages by non-super users
         "request" : { appenders : [ "logall" ], level : "ALL" }, // all requests
         "database" : { appenders : [ "logall" ], level : "ALL" }, // all database ops
-        "daemon" : { appenders : [ "logall" /*, "console_default"*/ ], level : "ALL" } // daemon
+        "daemon" : { appenders : [ "logall", "console_default" ], level : "ALL" } // daemon
     }
 });
 
@@ -76,8 +80,20 @@ const loggers = {
 env.loggers = loggers;
 loggers.default.info("logger ready");
 
+// exiting
+var exiting
+
 // daemon
-const daemon = new Daemon(config.daemonport, env);
+loggers.default.info("launching daemon client...");
+const daemonp = require("child_process").spawn("dotnet", [config.daemonpath, "./config.json"] , { stdio : "pipe" });
+
+daemonp.on("exit", (code, signal) => {
+    loggers.default.info("daemon exit with code", code);
+    loggers.daemon.info("daemon exit with code", code);
+    loggers.daemon.info("signal is", signal);
+});
+
+const daemon = new Daemon(daemonp, env);
 env.daemon = daemon;
 
 // modules
@@ -201,23 +217,8 @@ app.use("/apisuper", require("./routes/apisuper")(env));
 app.all("*", (req, res) => res.status(404).send("Ich kann es nicht finden."))
 
 // run! app, run!
-loggers.default.info("launching daemon server...")
-daemon.listen(() => {
-    app.listen(config.port, function() {
-        loggers.default.info("listening on %d...", config.port);
-    });
-});
-
-loggers.default.info("launching daemon client...");
-require("child_process").exec(`${config.daemonpath} ./config.json`, (error, stdout, stderr) => {
-    if (error) {
-        loggers.daemon.error("daemon exit with code", error.code);
-        loggers.daemon.error("stderr is", stderr);
-    } else {
-        loggers.daemon.info("daemon exit normally");
-    }
-
-    loggers.daemon.info("stdout is", stdout);
+app.listen(config.port, function() {
+    loggers.default.info("listening on %d...", config.port);
 });
 
 process.on('exit', function() {
