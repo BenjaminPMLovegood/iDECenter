@@ -90,3 +90,6 @@ IGNORE#*
 IGNORE#*/
 
 iDaemonCenter.*
+
+iDaemonCenter/
+iDockerCenter/
