@@ -5,6 +5,7 @@ module.exports = function(env) {
     var router = express.Router();
     var users = env.users;
     var projects = env.projects;
+    var docker = env.docker;
 
     // user management
     router.post("/add_user", function(req, res) {
@@ -21,6 +22,20 @@ module.exports = function(env) {
     // projects management
     router.post("/get_all_projects", async function(req, res) {
         res.json(await projects.queryAllProjects());
+    });
+
+    router.post("/stop_all_projects", function(req, res) {
+        projects.queryAllProjects().then(v => {
+            projs = v.filter(p => p.running);
+
+            return docker.killmany(projs.map(p => p.containerId));
+        }).then(x => {
+            return projects.refreshRunningStatus();
+        }).then(x => {
+            res.json({ succeeded : true });
+        }).catch(any => {
+            res.json({ succeeded : false });
+        });
     });
 
     router.post("/get_all_users", async function(req, res) {

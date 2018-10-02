@@ -7,7 +7,7 @@
         "[[ -f $project_name.bin ]] && rm *.bin 2>/dev/null 1>&2",
         "[[ -f $project_name.elf ]] && rm *.elf 2>/dev/null 1>&2",
         "echo generating makefile...",
-        "mbed export -i GCC_ARM 2>/dev/null 1>&2",
+        "mbed export -i GCC_ARM --no-requirements 2>/dev/null 1>&2",
         "cat Makefile | sed -n '/.*/{s#$(DEPS)#BUILD/mbed-os/deps.mf#;p}' > Makefile.new",
         "echo makefile generated, building...",
         "make -j4 -f Makefile.new #2>/dev/null 1>&2",

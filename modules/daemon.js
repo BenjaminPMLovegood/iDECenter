@@ -38,7 +38,7 @@ class StdioDaemon {
         });
 
         this._child.stderr.on('data', data => {
-            this._logger.info(`daemon send ${data} via stderr`);
+            this._logger.warn(`daemon send ${data} via stderr`);
         });
     }
 

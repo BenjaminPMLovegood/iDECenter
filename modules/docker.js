@@ -84,5 +84,17 @@ module.exports = function(env) {
         });
     }
 
+    ex.killmany = async function(cids) {
+        return new Promise((resolve, reject) => {
+            daemon.call(dockerOpModuleName, "killmany", { cids : cids }, rv => {
+                if (rv.error) {
+                    reject(rv.error);
+                } else {
+                    resolve(rv.cids);
+                }
+            });
+        });
+    }
+
     return ex;
 }

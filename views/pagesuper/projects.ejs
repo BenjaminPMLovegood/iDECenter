@@ -59,11 +59,34 @@
             });
         }
 
+        function stopAllProj() {
+            $.ajax({
+                type : "POST",
+                url : "/apisuper/stop_all_projects",
+                dataType : 'json',
+                success : function(data) { 
+                    refreshProjList();
+                },
+                error : function(xhr, err) { 
+                    refreshProjList();
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+
         function refreshButtonClicked() {
             $('button#refresh').attr('disabled', true);
             refreshProjList();
             setTimeout(function() { 
                 $('button#refresh').attr('disabled', false); 
+            }, 1000);
+        }
+
+        function stopallButtonClicked() {
+            $('button#stopall').attr('disabled', true);
+            stopAllProj();
+            setTimeout(function() { 
+                $('button#stopall').attr('disabled', false); 
             }, 1000);
         }
 
@@ -96,6 +119,9 @@
                 <div class="col-md-2">
                     <h1>All Projects</h1>
                     <button class="btn" id="refresh" onclick="refreshButtonClicked()">Refresh</button>
+                    <br>
+                    <br>
+                    <button class="btn" id="stopall" onclick="stopallButtonClicked()">Stop All</button>
                 </div>
                 <div class="col-md-10">
                     <div id="proj"></div>
