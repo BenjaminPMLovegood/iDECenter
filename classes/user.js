@@ -109,8 +109,8 @@ class UserCollection {
                 } else {
                     var password = sha1(serverSalt(username, passwordBrowserSalted));
 
-                    var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password) VALUES (?, ?, ?, ?)");
-                    stmt.run(username, password, isSuper, c9password, function(err) {
+                    var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password, createTimeUtc) VALUES (?, ?, ?, ?, ?)");
+                    stmt.run(username, password, isSuper, c9password, new Date().toISOString(), function(err) {
                         if (err != undefined) resolve({ succeeded : false, error : err });
                         else {
                             resolve({ succeeded : true });
@@ -124,13 +124,14 @@ class UserCollection {
 
     async getAllUsers() {
         return new Promise(resolve => {
-            this._db.all("SELECT id, username, super, c9password FROM users", function(err, rows) {
+            this._db.all("SELECT id, username, super, c9password, createTimeUtc FROM users", function(err, rows) {
                 resolve(rows.map(function(row) {
                     return {
                         id : row.id,
                         username : row.username,
                         super : !!(row.super),
-                        c9password : row.c9password
+                        c9password : row.c9password,
+                        createTimeUtc : row.createTimeUtc
                     };
                 }));
             });

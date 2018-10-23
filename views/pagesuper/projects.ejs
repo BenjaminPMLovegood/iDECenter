@@ -6,6 +6,8 @@
         window.proj = undefined;
         window.projDiv = undefined;
 
+        $(function () { $("[data-toggle='tooltip']").tooltip(); });
+
         function dispProjList(list) {
             if (window.proj) window.proj.remove();
             if (!window.projDiv) window.projDiv = $("div#proj")[0];
@@ -32,7 +34,7 @@
                         <td>
                             <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
                         </td>
-                        <td>${p.containerId}</td>
+                        <td><span data-toggle="tooltip" data-placement="bottom" title="Click to copy full cid: '${p.containerId}'" onclick="$.toClipboard('${p.containerId}')">${p.containerId.substring(0, 7)}</span></td>
                         <td>${p.port}</td>
                         <td>
                         ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}

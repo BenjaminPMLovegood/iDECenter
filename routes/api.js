@@ -10,7 +10,7 @@ module.exports = function(env) {
     var docker = env.docker;
 
     // todo: simplify this
-    router.post("/create_project", function(req, res) {
+    router.post("/create_project", async function(req, res) {
         var uid = req.session.passport.user.id;
         var template = req.body.template || "$a invalid template name$";
         var projectName = req.body.project || "$a invalid project name$";
@@ -18,49 +18,30 @@ module.exports = function(env) {
         if (!nameCheck.checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
 
-        var userInfo = {};
-        var authDir = "";
-        var projDir = "";
-        var fmaps = [];
+        if (await projects.projExists(uid, projectName)) return res.json({ succeeded : false, error : "Project already exists." });
 
-        projects.projExists(uid, projectName).then(exists => {
-            if (exists) return res.json({ succeeded : false, error : "Project already exists." });
-    
-            return users.getUserInfo(uid);
-        }).then(ui => {
-            userInfo = ui;
-            return wm.ensureAuthDir(userInfo.username, userInfo.c9password);
-        }).then(ad => {
-            authDir = ad;
-            return wm.ensureProjectDir(userInfo.username, projectName);
-        }).then(pd => {
-            projDir = pd;
-            return templates.instantiateProject(template, projDir);
-        }).then(m => {
-            m = m.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
-            m.push({ host : authDir, docker : "/root/c9auth", readonly : true });
-            
-            fmaps = m;
+        var userInfo = await users.getUserInfo(uid);
+        var authDir = await wm.ensureAuthDir(userInfo.username, userInfo.c9password);
+        var projDir = await wm.ensureProjectDir(userInfo.username, projectName);
+        var fmaps = await templates.instantiateProject(template, projDir);
+        fmaps = fmaps.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
+        fmaps.push({ host : authDir, docker : "/root/c9auth", readonly : true });
 
-            return projects.getMaxPid();
-        }).then(maxid => {
-            var port = projects.getBaseport() + maxid + 1;
+        var maxid = await projects.getMaxPid();
+        var port = projects.getBaseport() + maxid + 1;
     
-            docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmaps, [ "--ulimit nproc=1024:1024" ]).then(result => {
-                if (!result) {
-                    return res.json({ succeeded : false, error : "Failed to create docker container." });
-                }
-    
-                var cid = result;
-                projects.createProjectInDB(uid, projectName, port, cid).then(result => {
-                    if (result.succeeded) {
-                        return res.json({ succeeded : true });
-                    } else {
-                        return res.json({ succeeded : false, error : "Failed to write db." });
-                    }
-                });
-            });
-        });;
+        var cid = await docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmaps, [ "--ulimit nproc=1024:1024" ])
+        if (!cid) {
+            return res.json({ succeeded : false, error : "Failed to create docker container." });
+        }
+
+        projects.createProjectInDB(uid, projectName, port, cid).then(result => {
+            if (result.succeeded) {
+                return res.json({ succeeded : true });
+            } else {
+                return res.json({ succeeded : false, error : "Failed to write db." });
+            }
+        });
     });
 
     // todo: make super user really super
@@ -69,16 +50,16 @@ module.exports = function(env) {
         var uid = user.id;
         var pid = req.body.pid;
         
-        projects.queryProjectInfo(pid).then(info => {
-            if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
-            if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
-            if (info.running) return res.json({ succeeded : false, error : "Already running." });
+        var info = await projects.queryProjectInfo(pid);
 
-            docker.start(info.containerId).then(result => {
-                if (!result) return res.json({ succeeded : false, error : result.error });
+        if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
+        if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
+        if (info.running) return res.json({ succeeded : false, error : "Already running." });
 
-                projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
-            })
+        docker.start(info.containerId).then(result => {
+            if (!result) return res.json({ succeeded : false, error : result.error });
+
+            projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
         });
     });
 
