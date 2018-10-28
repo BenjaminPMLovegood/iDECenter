@@ -80,6 +80,8 @@ typings/
 /template/template_*
 /workspace/*
 !/workspace/dummy
+/archive/*
+!/archive/dummy
 
 /c9docker/files/files.tar
 *.sqlite3

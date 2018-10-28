@@ -1,0 +1,26 @@
+extends ../1-1-1-1
+
+block a
+    h1 Control Panel
+
+block b
+    button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/projects"') Manage projects
+
+block c
+    button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/users"') Manage users
+    br
+    p Register:&nbsp;
+        strong
+            - if (allowregister) {
+                span.text-success Enabled
+            - } else {
+                span.text-danger Disabled
+            - }
+    - if (allowregister) {
+        button.btn.btn-danger.btn-block(onclick='location.href="/pagesuper/disable_register"') Disable
+    - } else {
+        button.btn.btn-success.btn-block(onclick='location.href="/pagesuper/enable_register"') Enable
+    - }
+
+block d
+    button.btn.btn-danger.btn-block(onclick='location.href="/apisuper/shutdown"') Shutdown server

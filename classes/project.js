@@ -173,6 +173,20 @@ class ProjectCollection {
             });
         });
     }
+
+    async deleteProjectInDB(pid) {
+        var realthis = this;
+
+        return new Promise(resolve => {
+            realthis._db.run("DELETE FROM projects WHERE id = ?", pid, function(err) {
+                if (err) {
+                    resolve({ succeeded : false, error : err });
+                } else {
+                    resolve({ succeeded : true });
+                }
+            });
+        });
+    }
 }
 
 module.exports = ProjectCollection;

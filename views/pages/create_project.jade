@@ -1,0 +1,60 @@
+extends ../1-3
+
+block scripts
+    script.
+        function load_templates() {
+            templateSelect = $("select#templates")[0];
+
+            $.post("/api/get_templates", function(data) {
+                for (var i in data) {
+                    var temp = data[i];
+                    $(`<option value="${temp}">${temp}</option>`).appendTo(templateSelect);
+                }
+            });
+        }
+
+        window.onload = function() {
+            load_templates();
+        }
+
+        function do_create() {
+            $("p#errmsg").text("");
+            
+            projectName = $("input#projectname").val();
+            templateName = $("select#templates").val();
+
+            if (!checkProjectName(projectName)) return $("p#errmsg").text("invalid project name");
+
+            $("button#create").attr("disabled", true);
+            failed = function(err) {
+                $("p#errmsg").text(err);
+                $("button#create").attr("disabled", false);
+            }
+
+            succeeded = function() {
+                window.location.href = "/";
+            }
+            
+            $.ajax({ 
+                cache : false,
+                data : { template : templateName, project : projectName },
+                error : (xhr, msg) => failed(xhr.responseText),
+                success : (result) => result.succeeded ? succeeded() : failed(result.error),
+                url : "/api/create_project",
+                type : "POST"
+            });
+        }
+
+block left
+    h1 Creat Project
+    p 工程名要求只包含大小写拉丁字母，数字或下划线，长度在1到32之间。
+
+block right
+    .form-group
+        lable(for="projectname") Project name:
+        input.form-control#projectname(type="text", placeholder="Project name")
+    .form-group
+        lable(for="templates") Template:
+        select.form-control#templates()
+    button.btn.btn-primary#create(onclick="do_create();") Creat
+    p.text-danger#errmsg

@@ -1,0 +1,10 @@
+extends ../full
+
+block content
+    - if (err == "not_running") {
+        .alert.alert-danger Required project is not running.
+    - } else if (err == "not_yours") {
+        .alert.alert-danger You are not permitted to visit this c9 instance.
+    - } else if (err == "not_exists") {
+        .alert.alert-danger Wrong pid.
+    - }

@@ -112,7 +112,7 @@ env.projects = projects;
 const templates = new TemplateCollection(config.templates, env);
 env.templates = templates;
 
-const wm = new WorkspaceManager(ph.getPath(config.workspace), env);
+const wm = new WorkspaceManager(ph.getPath(config.workspace), ph.getPath(config.archive), env);
 env.workspaceManager = wm;
 
 projects.startDaemon();
@@ -122,7 +122,8 @@ loggers.default.info("modules ready");
 // configure app
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
-app.set("view engine", "ejs");
+// app.set("view engine", "ejs");
+app.set("view engine", "jade");
 
 // middlewares
 loggers.default.info("loading express middlewares...");

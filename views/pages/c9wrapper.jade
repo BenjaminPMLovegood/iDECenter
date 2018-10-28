@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+html.fullscreen
+    head
+        include ../components/head
+        script.
+            window.onload = function() {
+                var host = window.location.hostname;
+                $("#c9").attr("src", "http://" + host + ":" + #{port} + "/");
+
+                setInterval(function() {
+                    $.post("/api/do_nothing");
+                }, 10000);
+            }
+    body.fullscreen
+        iframe.fullscreen#c9(src="about:blank")

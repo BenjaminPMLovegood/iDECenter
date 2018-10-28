@@ -10,6 +10,7 @@
     },
     "c9portbase" : "4396",
     "workspace" : "./workspace/",
+    "archive" : "./archive/",
     "allowregister" : false,
     "templates" : [
         {

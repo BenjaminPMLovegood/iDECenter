@@ -81,8 +81,34 @@ module.exports = function(env) {
         });
     });
 
-    router.post("/delete_project", function(req, res) {
+    router.post("/delete_project", async function(req, res) {
+        var user = req.session.passport.user;
+        var uid = user.id;
+        var pid = req.body.pid || -1;
+        var archive = req.body.archive || "false";
+        archive = archive == "true";
 
+        var info = await projects.queryProjectInfo(pid);
+        var projectName = info.name;
+
+        if (!info) return res.json({ succeeded : false, error : "Project doesn't exist." });
+        if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
+
+        var ownername = await users.getUsername(info.owner);
+
+        if (archive) {
+            wm.archiveProjectDir(ownername, projectName, pid).then(anything => {
+                projects.deleteProjectInDB(pid).then(anything => {
+                    res.json({ succeeded : true });
+                });
+            });
+        } else {
+            wm.deleteProjectDir(ownername, projectName).then(anything => {
+                projects.deleteProjectInDB(pid).then(anything => {
+                    res.json({ succeeded : true });
+                });
+            });
+        }
     });
 
     router.post("/get_templates", function(req, res) {

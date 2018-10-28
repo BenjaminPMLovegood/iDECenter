@@ -1,0 +1,34 @@
+extends 1-3
+
+block scripts
+    script(type="text/javascript").
+        function do_login() {
+            username = $('#username').val();
+            if (checkUsername(username)) {
+                $("#login").attr("disabled", true);
+                $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1(browersalt($('#username').val(), $('#password').val())) });
+            } else {
+                $("#errmsg").text("Invalid username.");
+            }
+        }
+
+block left
+    .form-group
+        lable(for="username") Username:
+        input.form-control#username(type="text", placeholder="Enter username")
+    .form-group
+        lable(for="password") Password:
+        input.form-control#password(type="password", placeholder="Enter password")
+    button.btn.btn-primary#login(onclick="do_login();") Login
+    p.text-danger#errmsg #{err}
+
+block right
+    .card
+        .card-body
+            h2 另外还有几点须知
+            ul
+                li 服务器反应可能很慢，无论按了什么按钮，先等两秒。
+                li 反应迟缓的问题在IDE里面尤甚，第一次Build可能要花上两分钟，耐心点。
+                li 这个网站建得比较仓促，有很多不完善的地方，有意见和建议可以<a href="mailto:benjaminpml@foxmail.com">联系我</a>。
+                li 虽然仓促，但是日志还是很齐全的。Behave yourself！
+                li 10分钟没有任何操作则自动退出登录。但是在IDE页面不会。

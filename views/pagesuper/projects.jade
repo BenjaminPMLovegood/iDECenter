@@ -1,10 +1,11 @@
-<!doctype html>
-<html>
-    <head>
-        <% include ../components/head %>
-        <script>
+extends ../1-3
+
+block scripts
+    script.
         window.proj = undefined;
         window.projDiv = undefined;
+
+        $(function () { $("[data-toggle='tooltip']").tooltip(); });
 
         function dispProjList(list) {
             if (window.proj) window.proj.remove();
@@ -13,10 +14,13 @@
             window.proj = $("<table border='0' class='table'>");
             window.proj.append($(`
                 <tr>
-                    <th>Pid</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Operations</th>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>owner</th>
+                    <th>status</th>
+                    <th>cid</th>
+                    <th>port</th>
+                    <th>op</th>
                     <th></th>
                 </tr>
             `));
@@ -26,16 +30,18 @@
                     <tr>
                         <td>${p.id}</td>
                         <td>${p.name}</td>
+                        <td>${p.owner}</td>
                         <td>
                             <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
                         </td>
+                        <td><span data-toggle="tooltip" data-placement="bottom" title="Click to copy full cid: '${p.containerId}'" onclick="$.toClipboard('${p.containerId}')">${p.containerId.substring(0, 7)}</span></td>
+                        <td>${p.port}</td>
                         <td>
-                            ${p.running ? `<button class="btn btn-primary" onclick="window.location.href='/pages/c9/${p.id}'">Open</button>` : ""}
-                            ${!p.running ? `<button class="btn btn-success" onclick="launchProject(${p.id})">Launch project</button>` : `<button class="btn btn-danger" onclick="stopProject(${p.id})">Stop</button>`}
+                        ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}
                         </td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteProject(${p.id}, false)">Delete</button>
-                            <button class="btn btn-warning" onclick="deleteProject(${p.id}, true)">Archive</button>
+                            <a href="javascript:void(0)" onclick="deleteProject(${p.id}, false)">Delete</a>
+                            <a href="javascript:void(0)" onclick="deleteProject(${p.id}, true)">Archive</a>
                         </td>
                     </tr>
                 `));
@@ -47,7 +53,7 @@
         function refreshProjList() {
             $.ajax({
                 type : "POST",
-                url : "/api/get_projects",
+                url : "/apisuper/get_all_projects",
                 dataType : 'json',
                 success : function(data) { 
                     dispProjList(data);
@@ -59,11 +65,34 @@
             });
         }
 
+        function stopAllProj() {
+            $.ajax({
+                type : "POST",
+                url : "/apisuper/stop_all_projects",
+                dataType : 'json',
+                success : function(data) { 
+                    refreshProjList();
+                },
+                error : function(xhr, err) { 
+                    refreshProjList();
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+
         function refreshButtonClicked() {
             $('button#refresh').attr('disabled', true);
             refreshProjList();
             setTimeout(function() { 
                 $('button#refresh').attr('disabled', false); 
+            }, 1000);
+        }
+
+        function stopallButtonClicked() {
+            $('button#stopall').attr('disabled', true);
+            stopAllProj();
+            setTimeout(function() { 
+                $('button#stopall').attr('disabled', false); 
             }, 1000);
         }
 
@@ -94,23 +123,13 @@
                 else $("p#errmsg").text(error);
             });
         }
-        </script>
-    </head>
-    <body>
-        <% include ../components/nav %>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-2">
-                    <h1>Projects</h1>
-                    <button class="btn" id="refresh" onclick="refreshButtonClicked()">Refresh</button>
-                    <!-- typo? no i'm just learning linux -->
-                    <button class="btn" onclick="window.location.href='/pages/create_project';">Creat</button>
-                </div>
-                <div class="col-md-10">
-                    <div id="proj"></div>
-                    <p id="errmsg"></p>
-                </div>
-            </div>
-        </div>
-    </body>
-</html>
+
+block left
+    h1 All Projects
+    button.btn#refresh(onclick="refreshButtonClicked()") Refresh
+    &nbsp;
+    button.btn#stopall(onclick="stopallButtonClicked()") Stop All
+
+block right
+    #proj
+    p#errmsg

@@ -1,0 +1,74 @@
+extends ../1-3
+
+block scripts
+    script.
+        window.user = undefined;
+        window.userDiv = undefined;
+
+        function dispUserList(list) {
+            if (window.user) window.user.remove();
+            if (!window.userDiv) window.userDiv = $("div#user")[0];
+
+            window.user = $("<table border='0' class='table'>");
+            window.user.append($(`
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>super</th>
+                    <th>c9 password</th>
+                    <th>create time utc</th>
+                </tr>
+            `));
+            for (var i in list) {
+                var p = list[i];
+                window.user.append($(`
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.username}</td>
+                        <td>${p.super}</td>
+                        <td>${p.c9password}</td>
+                        <td>${p.createTimeUtc}</td>
+                    </tr>
+                `));
+            }
+
+            window.user.appendTo(window.userDiv);
+        }
+
+        function refreshUserList() {
+            $.ajax({
+                type : "POST",
+                url : "/apisuper/get_all_users",
+                dataType : 'json',
+                success : function(data) {
+                    dispUserList(data);
+                },
+                error : function(xhr, err) {
+                    dispUserList([]);
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+
+        function refreshButtonClicked() {
+            $('button#refresh').attr('disabled', true);
+            refreshUserList();
+            setTimeout(function() {
+                $('button#refresh').attr('disabled', false);
+            }, 1000);
+        }
+
+        window.onload = function() { refreshUserList(); }
+
+        function userOperationSucceeded() {
+            $("p#errmsg").text("");
+            refreshUserList();
+        }
+
+block left
+    h1 Users
+    button.btn#refresh(onclick="refreshButtonClicked()") Refresh
+
+block right
+    #user
+    p#errmsg

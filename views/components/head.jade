@@ -1,0 +1,48 @@
+meta(charset="UTF-8")
+meta(name="viewport", content="width=device-width, initial-scale=1.0")
+meta(http-equiv="X-UA-Compatible", content="ie=edge")
+
+- if (typeof titlefill !== 'undefined') {
+    title #{titlefill}
+- } else {
+    - if (typeof title !== 'undefined') {
+        title #{title} - iDECenter
+    - } else {
+        title iDECenter
+    - }
+- }
+
+link(rel="stylesheet", href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css")
+script(src="https://code.jquery.com/jquery-3.3.1.min.js", integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=", crossorigin="anonymous")
+script(src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js")
+script(src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.min.js")
+
+style(type="text/css").
+    td {
+        vertical-align: middle!important
+    }
+
+    html.fullscreen {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    body.fullscreen {
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    iframe.fullscreen {
+        margin: 0;
+        border-style: none;
+        width: 100%;
+        height: 100%;
+    }
+
+script(src="/scripts/sha1.js")
+script(src="/scripts/postjump.js")
+script(src="/scripts/check_username.js")
+script(src="/scripts/browser_salt.js")
+script(src="/scripts/to_clipboard.js")
