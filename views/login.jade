@@ -8,7 +8,7 @@ block scripts
                 $("#login").attr("disabled", true);
                 $.postjump('/login_gate', { username : $('#username').val(), password : hex_sha1(browersalt($('#username').val(), $('#password').val())) });
             } else {
-                $("#errmsg").text("Invalid username.");
+                errmsg.pop("Invalid username.");
             }
         }
 
@@ -20,7 +20,6 @@ block left
         lable(for="password") Password:
         input.form-control#password(type="password", placeholder="Enter password")
     button.btn.btn-primary#login(onclick="do_login();") Login
-    p.text-danger#errmsg #{err}
 
 block right
     .card

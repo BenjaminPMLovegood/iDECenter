@@ -1,5 +1,5 @@
-nav.navbar.navbar-expand.bg-light.navbar-light.navbar-fixed-top
-    ul.navbar-nav
+nav.navbar.navbar-expand-sm.navbar-light.bg-light.navbar-fixed-top
+    ul.navbar-nav.navbar-expand-sm
         a.navbar-brand(href="/") iDECenter
         - if (authed) {
             span.navbar-text.text-dark #{username}
@@ -7,18 +7,17 @@ nav.navbar.navbar-expand.bg-light.navbar-light.navbar-fixed-top
                     sup
                         a.text-primary(href="/pagesuper/index") super
                 - }
-            &nbsp;
+            | &nbsp;
             span.navbar-text.text-dark c9 password: #{c9password}
         - }
-    div.collapse.navbar-collapse.justify-content-end
-        ul.navbar-nav
-            - if (authed) {
-                li.nav-item
-                    a.nav-link(href="/logout") Log out
-            - } else {
-                li.nav-item
-                    a.nav-link(href="/register") Register
-                li.nav-item
-                    a.nav-link(href="/login") Log in
-            - }
+    ul.navbar-nav.navbar-expand-sm.justify-content-end.navbar-collapse.collapse
+        - if (authed) {
+            li.nav-item
+                a.nav-link(href="/logout") Log out
+        - } else {
+            li.nav-item
+                a.nav-link(href="/register") Register
+            li.nav-item
+                a.nav-link(href="/login") Log in
+        - }
 br

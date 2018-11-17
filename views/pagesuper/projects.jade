@@ -99,37 +99,36 @@ block scripts
         window.onload = function() { refreshProjList(); }
 
         function projOperationSucceeded() {
-            $("p#errmsg").text("");
+            errmsg.close();
             refreshProjList();
         }
 
         function launchProject(pid) {
             $.post("/api/launch_project", { pid : pid }, function (data) {
                 if (data.succeeded) projOperationSucceeded();
-                else $("p#errmsg").text(error);
+                else errmsg.pop(error);
             });
         }
 
         function stopProject(pid) {
             $.post("/api/stop_project", { pid : pid }, function (data) {
                 if (data.succeeded) projOperationSucceeded();
-                else $("p#errmsg").text(error);
+                else errmsg.pop(error);
             });
         }
 
         function deleteProject(pid, archive) {
             $.post("/api/delete_project", { pid : pid, archive : archive }, function (data) {
                 if (data.succeeded) projOperationSucceeded();
-                else $("p#errmsg").text(error);
+                else errmsg.pop(error);
             });
         }
 
 block left
     h1 All Projects
     button.btn#refresh(onclick="refreshButtonClicked()") Refresh
-    &nbsp;
+    | &nbsp;
     button.btn#stopall(onclick="stopallButtonClicked()") Stop All
 
 block right
     #proj
-    p#errmsg

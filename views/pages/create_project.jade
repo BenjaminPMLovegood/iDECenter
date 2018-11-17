@@ -18,16 +18,16 @@ block scripts
         }
 
         function do_create() {
-            $("p#errmsg").text("");
+            errmsg.close();
             
             projectName = $("input#projectname").val();
             templateName = $("select#templates").val();
 
-            if (!checkProjectName(projectName)) return $("p#errmsg").text("invalid project name");
+            if (!checkProjectName(projectName)) return errmsg.pop("invalid project name");
 
             $("button#create").attr("disabled", true);
             failed = function(err) {
-                $("p#errmsg").text(err);
+                errmsg.pop(err);
                 $("button#create").attr("disabled", false);
             }
 
@@ -57,4 +57,3 @@ block right
         lable(for="templates") Template:
         select.form-control#templates()
     button.btn.btn-primary#create(onclick="do_create();") Creat
-    p.text-danger#errmsg

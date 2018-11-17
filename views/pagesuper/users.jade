@@ -61,7 +61,7 @@ block scripts
         window.onload = function() { refreshUserList(); }
 
         function userOperationSucceeded() {
-            $("p#errmsg").text("");
+            errmsg.close();
             refreshUserList();
         }
 
@@ -71,4 +71,3 @@ block left
 
 block right
     #user
-    p#errmsg

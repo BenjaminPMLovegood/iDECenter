@@ -1,4 +1,3 @@
-// modules
 const
     express = require("express"),
     exsession = require("express-session"),
@@ -7,23 +6,22 @@ const
     bodyParser = require('body-parser'),
     cookieParser = require("cookie-parser"),
     passport = require("passport"),
-    LocalStrategy = require("passport-local").Strategy,
     sqlite3 = require("sqlite3"),
-    log4js = require("log4js"),
+    log4js = require("log4js");
 
-    app = express();
-
-// submodules
 const
     Docker = require("./modules/docker"),
     PathHelper = require("./modules/path_helper"),
     WorkspaceManager = require("./modules/workspace_man"),
     RouterLogger = require("./modules/router_logger"),
+    LocalStrategy = require("passport-local").Strategy,
     GetRequester = require("./modules/get_requester"),
     UserCollection = require("./classes/user"),
     ProjectCollection = require("./classes/project"),
     TemplateCollection = require("./classes/template"),
     Daemon = require("./modules/daemon");
+
+const app = express();
 
 // config
 const config = Object.assign({}, require("./config.json"));
@@ -80,9 +78,6 @@ const loggers = {
 env.loggers = loggers;
 loggers.default.info("logger ready");
 
-// exiting
-var exiting
-
 // daemon
 loggers.default.info("launching daemon client...");
 const daemonp = require("child_process").spawn("dotnet", [config.daemonpath, "./config.json"] , { stdio : "pipe" });
@@ -122,7 +117,6 @@ loggers.default.info("modules ready");
 // configure app
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
-// app.set("view engine", "ejs");
 app.set("view engine", "jade");
 
 // middlewares
