@@ -15,15 +15,13 @@ class UserCollection {
 
             var newPassword = sha1(serverSalt(username, passwordBrowserSalted));
 
-            var stmt = this._db.prepare("SELECT * FROM users WHERE username = ? AND password = ?");
-            stmt.get(username, newPassword, function(err, row) {
+            this._db.get("SELECT * FROM users WHERE username = ? AND password = ?", username, newPassword, function(err, row) {
                 if (typeof row !== "undefined") {
                     resolve({ id : row.id, username : row.username, super : row.super, c9password : row.c9password });
                 } else {
                     resolve(void 0);
                 }
             });
-            stmt.finalize();
         });
     }
 
@@ -37,15 +35,13 @@ class UserCollection {
 
     async usernameExists(username) {
         return new Promise(resolve => {
-            var stmt = this._db.prepare("SELECT * FROM users WHERE username = ?");
-            stmt.get(username, function(err, row) {
+            this._db.get("SELECT * FROM users WHERE username = ?", username, function(err, row) {
                 if (typeof row !== "undefined") {
                     resolve(true);
                 } else {
                     resolve(false);
                 }
             });
-            stmt.finalize();
         });
     }
 
@@ -85,8 +81,7 @@ class UserCollection {
                 resolve(this._userCache[userId]);
             } else {
                 var cache = this._userCache;
-                var stmt = this._db.prepare("SELECT id, username, super, c9password FROM users WHERE id = ?");
-                stmt.get(userId, function(err, row) {
+                this._db.get("SELECT id, username, super, c9password FROM users WHERE id = ?", userId, function(err, row) {
                     if (row != undefined) {
                         cache[userId] = { id : row.id, username : row.username, super : row.super, c9password : row.c9password };
                     } else {
@@ -109,14 +104,12 @@ class UserCollection {
                 } else {
                     var password = sha1(serverSalt(username, passwordBrowserSalted));
 
-                    var stmt = this._db.prepare("INSERT INTO users (username, password, super, c9password, createTimeUtc) VALUES (?, ?, ?, ?, ?)");
-                    stmt.run(username, password, isSuper, c9password, new Date().toISOString(), function(err) {
+                    this._db.run("INSERT INTO users (username, password, super, c9password, createTimeUtc) VALUES (?, ?, ?, ?, ?)", username, password, isSuper, c9password, new Date().toISOString(), function(err) {
                         if (err != undefined) resolve({ succeeded : false, error : err });
                         else {
                             resolve({ succeeded : true });
                         }
                     })
-                    stmt.finalize();
                 }
             });
         });

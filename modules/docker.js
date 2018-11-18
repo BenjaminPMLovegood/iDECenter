@@ -11,6 +11,8 @@ module.exports = function(env) {
         });
     }
 
+    env._runningCids = []
+
     // create a container from a specified image and return the container id
     // "docker create"
     //
@@ -94,6 +96,23 @@ module.exports = function(env) {
                 }
             });
         });
+    }
+
+    ex.refreshRunningStatus = async function() {
+        return env._runningCids = (await ex.ps()) || [];
+    }
+
+    ex.isCidRunning = function(cid) {
+        return env._runningCids.includes(cid);
+    }
+
+    ex.startRefresher = function() {
+        ex.refreshRunningStatus(); // do it once
+        env._refresher = setInterval(function() { ex.refreshRunningStatus(); }, 5000);
+    }
+
+    ex.closeRefresher = function() {
+        if (env._refresher) clearInterval(env._refresher);
     }
 
     return ex;

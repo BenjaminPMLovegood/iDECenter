@@ -6,8 +6,10 @@ const ph = new pathHelper("/workspace/");
 
 module.exports = function(env) {
     var router = express.Router();
-    var users = env.users, projects = env.projects, templates = env.templates, wm = env.workspaceManager;
+    var users = env.users, templates = env.templates, wm = env.workspaceManager;
+    var config = env.config;
     var docker = env.docker;
+    var dba = env.dba;
 
     // todo: simplify this
     router.post("/create_project", async function(req, res) {
@@ -18,7 +20,7 @@ module.exports = function(env) {
         if (!nameCheck.checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
 
-        if (await projects.projExists(uid, projectName)) return res.json({ succeeded : false, error : "Project already exists." });
+        if (await dba.projectExists(uid, projectName)) return res.json({ succeeded : false, error : "Project already exists." });
 
         var userInfo = await users.getUserInfo(uid);
         var authDir = await wm.ensureAuthDir(userInfo.username, userInfo.c9password);
@@ -27,20 +29,17 @@ module.exports = function(env) {
         fmaps = fmaps.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
         fmaps.push({ host : authDir, docker : "/root/c9auth", readonly : true });
 
-        var maxid = await projects.getMaxPid();
-        var port = projects.getBaseport() + maxid + 1;
+        var port = config.c9portbase - 0 + await dba.getMaxPid() + 1;
     
         var cid = await docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmaps, [ "--ulimit nproc=1024:1024" ])
         if (!cid) {
             return res.json({ succeeded : false, error : "Failed to create docker container." });
         }
 
-        projects.createProjectInDB(uid, projectName, port, cid).then(result => {
-            if (result.succeeded) {
-                return res.json({ succeeded : true });
-            } else {
-                return res.json({ succeeded : false, error : "Failed to write db." });
-            }
+        dba.createProjectInDB(uid, projectName, port, cid).then(result => {
+            return res.json({ succeeded : true });
+        }).catch(anything => {
+            return res.json({ succeeded : false, error : "Failed to write db." });
         });
     });
 
@@ -50,7 +49,7 @@ module.exports = function(env) {
         var uid = user.id;
         var pid = req.body.pid;
         
-        var info = await projects.queryProjectInfo(pid);
+        var info = await dba.getProjectByPid(pid);
 
         if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
         if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
@@ -59,7 +58,7 @@ module.exports = function(env) {
         docker.start(info.containerId).then(result => {
             if (!result) return res.json({ succeeded : false, error : result.error });
 
-            projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
+            docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
         });
     });
 
@@ -68,7 +67,7 @@ module.exports = function(env) {
         var uid = user.id;
         var pid = req.body.pid;
         
-        projects.queryProjectInfo(pid).then(info => {
+        dba.getProjectByPid(pid).then(info => {
             if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
             if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
             if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
@@ -76,7 +75,7 @@ module.exports = function(env) {
             docker.kill(info.containerId).then(result => {
                 if (!result) return res.json({ succeeded : false, error : result.error });
 
-                projects.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
+                docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
             })
         });
     });
@@ -88,7 +87,7 @@ module.exports = function(env) {
         var archive = req.body.archive || "false";
         archive = archive == "true";
 
-        var info = await projects.queryProjectInfo(pid);
+        var info = await dba.getProjectByPid(pid);
         var projectName = info.name;
 
         if (!info) return res.json({ succeeded : false, error : "Project doesn't exist." });
@@ -98,13 +97,13 @@ module.exports = function(env) {
 
         if (archive) {
             wm.archiveProjectDir(ownername, projectName, pid).then(anything => {
-                projects.deleteProjectInDB(pid).then(anything => {
+                dba.deleteProjectInDB(pid).then(anything => {
                     res.json({ succeeded : true });
                 });
             });
         } else {
             wm.deleteProjectDir(ownername, projectName).then(anything => {
-                projects.deleteProjectInDB(pid).then(anything => {
+                dba.deleteProjectInDB(pid).then(anything => {
                     res.json({ succeeded : true });
                 });
             });
@@ -116,7 +115,7 @@ module.exports = function(env) {
     });
 
     router.post("/get_projects", async function(req, res) {
-        res.json(await projects.queryUsersProjects(req.session.passport.user.id));
+        res.json(await dba.getUserProjects(req.session.passport.user.id));
     });
 
     // do nothing, just refresh cookie

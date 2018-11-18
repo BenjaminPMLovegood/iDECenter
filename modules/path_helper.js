@@ -1,6 +1,4 @@
-const 
-    fs = require("fs"),
-    path = require("path");
+const path = require("path");
 
 class PathHelper {
     constructor(base) {
@@ -8,7 +6,7 @@ class PathHelper {
     }
 
     getPath(p) {
-        if (typeof p !== "string") return undefined;
+        if (typeof p !== "string") return void 0;
 
         if (p.length == 0) return this._base;
         if (p[0] == "/") return path.normalize(p);

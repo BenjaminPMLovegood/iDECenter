@@ -17,8 +17,8 @@ const
     LocalStrategy = require("passport-local").Strategy,
     GetRequester = require("./modules/get_requester"),
     UserCollection = require("./classes/user"),
-    ProjectCollection = require("./classes/project"),
     TemplateCollection = require("./classes/template"),
+    DatabaseAssistance = require("./classes/dba"),
     Daemon = require("./modules/daemon");
 
 const app = express();
@@ -88,33 +88,22 @@ daemonp.on("exit", (code, signal) => {
     loggers.daemon.info("signal is", signal);
 });
 
-const daemon = new Daemon(daemonp, env);
-env.daemon = daemon;
+env.daemon = new Daemon(daemonp, env);
 
 // modules
-const docker = Docker(env);
-env.docker = docker;
+env.docker = Docker(env);
+env.ph = new PathHelper(__dirname);
+env.dba = new DatabaseAssistance(env);
+env.users = new UserCollection(db);
+env.templates = new TemplateCollection(config.templates, env);
+env.workspaceManager = new WorkspaceManager(env.ph.getPath(config.workspace), env.ph.getPath(config.archive), env);
 
-const ph = new PathHelper(__dirname);
-env.ph = ph;
-
-const users = new UserCollection(db);
-env.users = users;
-
-const projects = new ProjectCollection(env, config.c9portbase - 0); // a very "amazing" type system
-env.projects = projects;
-
-const templates = new TemplateCollection(config.templates, env);
-env.templates = templates;
-
-const wm = new WorkspaceManager(ph.getPath(config.workspace), ph.getPath(config.archive), env);
-env.workspaceManager = wm;
-
-projects.startDaemon();
+env.docker.startRefresher();
 
 loggers.default.info("modules ready");
 
 // configure app
+loggers.default.info("configuring app...");
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
 app.set("view engine", "jade");
@@ -162,11 +151,16 @@ app.use((req, res, next) => {
     return next();
 });
 
+app.get("*", (req, res, next) => {
+    res.locals.err = req.flash('error');
+    return next();
+})
+
 app.use("/scripts", express.static("scripts"));
 
 passport.use("login", new LocalStrategy(
     function (username, password, done) {
-        users.verify(username, password).then(user => {
+        env.users.verify(username, password).then(user => {
             if (user) {
                 loggers.login.info("user %s(%d) logging in", user.username, user.id);
                 done(null, user);
@@ -178,13 +172,8 @@ passport.use("login", new LocalStrategy(
     }
 ));
 
-passport.serializeUser(function (user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-    done(null, user);
-});
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
 // routes
 const auths = require("./modules/auths")(env);
@@ -217,7 +206,7 @@ app.listen(config.port, function() {
 });
 
 process.on('exit', function() {
-    if (projects) projects.closeDaemon();
+    if (docker) docker.closeRefresher();
     daemon.close();
     db.close();
     loggers.default.info("server exiting, closing logger, goodbye");

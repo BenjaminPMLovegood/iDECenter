@@ -16,7 +16,6 @@ module.exports = function(env) {
     });
 
     router.get("/register", function(req, res) {
-        res.locals.err = req.flash('error');
         if (req.isAuthenticated()) return res.redirect("/");
         if (!config.allowregister) return render("register_disabled", req, res, { title : "Register" });
         render("register", req, res, { title : "Register" });
@@ -52,7 +51,6 @@ module.exports = function(env) {
     });
 
     router.get("/login", function(req, res) {
-        res.locals.err = req.flash('error');
         render("login", req, res, { title : "Login" });
     });
     

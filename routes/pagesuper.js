@@ -3,7 +3,6 @@ const render = require("../modules/render");
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
-    var projects = env.projects;
     var config = env.config;
 
     router.get("/index", function(req, res) {
