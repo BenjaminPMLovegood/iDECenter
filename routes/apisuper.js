@@ -3,7 +3,6 @@ const util = require("util");
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
-    var users = env.users;
     var docker = env.docker;
     var dba = env.dba;
 
@@ -16,7 +15,7 @@ module.exports = function(env) {
 
         if (username == undefined || password == undefined) return res.json({ succeeded : false, error : "Invalid parameters." });
 
-        users.addUser(username, password, isSuper, c9password).then(v => res.json(v));
+        dba.addUser(username, password, isSuper, c9password).then(v => res.json(v));
     });
 
     // projects management
@@ -39,7 +38,7 @@ module.exports = function(env) {
     });
 
     router.post("/get_all_users", async function(req, res) {
-        res.json(await users.getAllUsers());
+        res.json(await dba.getAllUsers());
     });
 
     // shutdown

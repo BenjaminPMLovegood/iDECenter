@@ -1,5 +1,5 @@
 module.exports = function(env) {
-    var users = env.users;
+    var dba = env.dba;
     var violate = env.loggers.violate;
     var violateSuper = env.loggers.violate_super;
 
@@ -24,7 +24,8 @@ module.exports = function(env) {
     
     var isAuthenticatedSuper = function (req, res, next) {
         isAuthenticated(req, res, function() {
-            users.isSuper(req.session.passport.user.id).then(s => {
+            dba.getUserById(req.session.passport.user.id).then(user => {
+                s = user.super;
                 if (!s) {
                     violateSuper.warn("%s is requested by non-super user %s(%d) from", req.originalUrl, req.session.passport.user.username, req.session.passport.user.id, req.ip);
                     res.status(403).send("Permission denied."); // change it to a 403 page
@@ -37,7 +38,8 @@ module.exports = function(env) {
     
     var isAuthenticatedSuperForApi = function (req, res, next) {
         isAuthenticatedForApi(req, res, function() {
-            users.isSuper(req.session.passport.user.id).then(s => {
+            dba.getUserById(req.session.passport.user.id).then(user => {
+                s = user.super;
                 if (!s) {
                     violateSuper.warn("%s is requested by non-super user %s(%d) from", req.originalUrl, req.session.passport.user.username, req.session.passport.user.id, req.ip);
                     res.status(403).json({ error : "Permission denied." });

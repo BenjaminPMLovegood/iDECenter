@@ -6,7 +6,7 @@ const ph = new pathHelper("/workspace/");
 
 module.exports = function(env) {
     var router = express.Router();
-    var users = env.users, templates = env.templates, wm = env.workspaceManager;
+    var templates = env.templates, wm = env.workspaceManager;
     var config = env.config;
     var docker = env.docker;
     var dba = env.dba;
@@ -22,7 +22,7 @@ module.exports = function(env) {
 
         if (await dba.projectExists(uid, projectName)) return res.json({ succeeded : false, error : "Project already exists." });
 
-        var userInfo = await users.getUserInfo(uid);
+        var userInfo = await dba.getUserById(uid);
         var authDir = await wm.ensureAuthDir(userInfo.username, userInfo.c9password);
         var projDir = await wm.ensureProjectDir(userInfo.username, projectName);
         var fmaps = await templates.instantiateProject(template, projDir);
@@ -93,7 +93,7 @@ module.exports = function(env) {
         if (!info) return res.json({ succeeded : false, error : "Project doesn't exist." });
         if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
 
-        var ownername = await users.getUsername(info.owner);
+        var ownername = (await dba.getUserById(info.owner)).username;
 
         if (archive) {
             wm.archiveProjectDir(ownername, projectName, pid).then(anything => {

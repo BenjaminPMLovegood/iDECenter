@@ -5,7 +5,6 @@ const serverSalt = require("../modules/server_salt");
 const express = require("express");
 module.exports = function(env) {
     var router = express.Router();
-    var users = env.users;
     var passport = env.passport;
     var docker = env.docker;
     var config = env.config;
@@ -35,7 +34,7 @@ module.exports = function(env) {
             return res.redirect("/register");
         }
 
-        users.addUser(username, password, false, ("" + (1000000 + Math.round(Math.random() * 1000000))).substring(1)).then(v => {
+        dba.addUser(username, password, false, ("" + (1000000 + Math.round(Math.random() * 1000000))).substring(1)).then(v => {
             if (v.succeeded) {
                 res.redirect("/register_success");
             } else {

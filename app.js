@@ -16,7 +16,6 @@ const
     RouterLogger = require("./modules/router_logger"),
     LocalStrategy = require("passport-local").Strategy,
     GetRequester = require("./modules/get_requester"),
-    UserCollection = require("./classes/user"),
     TemplateCollection = require("./classes/template"),
     DatabaseAssistance = require("./classes/dba"),
     Daemon = require("./modules/daemon");
@@ -94,7 +93,6 @@ env.daemon = new Daemon(daemonp, env);
 env.docker = Docker(env);
 env.ph = new PathHelper(__dirname);
 env.dba = new DatabaseAssistance(env);
-env.users = new UserCollection(db);
 env.templates = new TemplateCollection(config.templates, env);
 env.workspaceManager = new WorkspaceManager(env.ph.getPath(config.workspace), env.ph.getPath(config.archive), env);
 
@@ -160,14 +158,12 @@ app.use("/scripts", express.static("scripts"));
 
 passport.use("login", new LocalStrategy(
     function (username, password, done) {
-        env.users.verify(username, password).then(user => {
-            if (user) {
-                loggers.login.info("user %s(%d) logging in", user.username, user.id);
-                done(null, user);
-            } else {
-                loggers.login.info("failed login attempt with %s:%s", username, password);
-                done(null, false, { message: "Incorrect username or password." });
-            }
+        env.dba.verifyUser(username, password).then(user => {
+            loggers.login.info("user %s(%d) logging in", user.username, user.id);
+            done(null, user);
+        }).catch(err => {
+            loggers.login.info("failed login attempt with %s:%s", username, password);
+            done(null, false, { message: err });
         });
     }
 ));
