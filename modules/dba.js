@@ -1,5 +1,5 @@
-const sqlitePromise = require("../modules/sqlite_promise");
-const serverSalt = require("../modules/server_salt");
+const sqlitePromise = require("./sqlite_promise");
+const serverSalt = require("./server_salt");
 const sha1 = require("../scripts/sha1");
 const usernameCheck = require("../scripts/check_username");
 

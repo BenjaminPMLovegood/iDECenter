@@ -16,8 +16,8 @@ const
     RouterLogger = require("./modules/router_logger"),
     LocalStrategy = require("passport-local").Strategy,
     GetRequester = require("./modules/get_requester"),
-    TemplateCollection = require("./classes/template"),
-    DatabaseAssistance = require("./classes/dba"),
+    TemplateCollection = require("./modules/template"),
+    DatabaseAssistance = require("./modules/dba"),
     Daemon = require("./modules/daemon");
 
 const app = express();
