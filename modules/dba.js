@@ -52,7 +52,7 @@ class DatabaseAssistant {
         if (!usernameCheck(username)) throw "Invalid username";
         var passwordSalted = sha1(serverSalt(username, passwordBrowserSalted));
 
-        result = await this._dbp.get("SELECT * FROM users WHERE username = $username AND password = $password", { $username : username, $password : passwordSalted });
+        var result = await this._dbp.get("SELECT * FROM users WHERE username = $username AND password = $password", { $username : username, $password : passwordSalted });
         if (result) {
             return Object.assign(result);
         } else {

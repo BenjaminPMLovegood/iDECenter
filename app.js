@@ -162,7 +162,8 @@ passport.use("login", new LocalStrategy(
             loggers.login.info("user %s(%d) logging in", user.username, user.id);
             done(null, user);
         }).catch(err => {
-            loggers.login.info("failed login attempt with %s:%s", username, password);
+            loggers.login.warn("failed login attempt with %s:%s", username, password);
+            loggers.login.warn("    ", err);
             done(null, false, { message: err });
         });
     }
