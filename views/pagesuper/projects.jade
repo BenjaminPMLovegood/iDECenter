@@ -1,4 +1,4 @@
-extends ../1-3
+extends ../1-5
 
 block scripts
     script.
@@ -30,7 +30,7 @@ block scripts
                     <tr>
                         <td>${p.id}</td>
                         <td>${p.name}</td>
-                        <td>${p.owner}</td>
+                        <td>${p.username}(${p.owner})</td>
                         <td>
                             <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
                         </td>
@@ -125,10 +125,11 @@ block scripts
         }
 
 block left
-    h1 All Projects
+    h1 Projects
     button.btn#refresh(onclick="refreshButtonClicked()") Refresh
-    | &nbsp;
-    button.btn#stopall(onclick="stopallButtonClicked()") Stop All
 
 block right
+    button.btn.btn-primary#stopall(onclick="stopallButtonClicked()") Stop All
+    br
+    br
     #proj

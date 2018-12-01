@@ -4,7 +4,7 @@
     "database" : "db.sqlite3",
     "port" : "4040",
     "session" : {
-        "maxAge" : 600000,
+        "maxAge" : 1800000,
         "secret" : "gouliguojia",
         "cookie" : "idecsid"
     },

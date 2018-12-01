@@ -54,7 +54,8 @@ class DatabaseAssistant {
 
         var result = await this._dbp.get("SELECT * FROM users WHERE username = $username AND password = $password", { $username : username, $password : passwordSalted });
         if (result) {
-            return Object.assign(result);
+            result.super = !!(result.super);
+            return Object.assign({}, result);
         } else {
             throw "Invalid username or password";
         }
