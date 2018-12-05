@@ -58,7 +58,7 @@ log4js.configure({
         "violate" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // not logged in
         "violate_super" : { appenders : [ "console_default", "logall" ], level : "ALL" }, // access to super apis/pages by non-super users
         "request" : { appenders : [ "logall" ], level : "ALL" }, // all requests
-        "database" : { appenders : [ "logall" ], level : "ALL" }, // all database ops
+        "database" : { appenders : [ "logall", "console_all" ], level : "ALL" }, // all database ops
         "daemon" : { appenders : [ "logall", "console_default" ], level : "ALL" } // daemon
     }
 });
@@ -203,7 +203,7 @@ app.listen(config.port, function() {
 });
 
 process.on('exit', function() {
-    if (docker) docker.closeRefresher();
+    if (env.docker) env.docker.closeRefresher();
     daemon.close();
     db.close();
     loggers.default.info("server exiting, closing logger, goodbye");

@@ -6,7 +6,7 @@ const usernameCheck = require("../scripts/check_username");
 class DatabaseAssistant {
     constructor(env) {
         this._db = env.db;
-        this._dbp = sqlitePromise(this._db);
+        this._dbp = sqlitePromise(this._db, env.loggers.database);
         this._docker = env.docker;
     }
 
@@ -38,7 +38,7 @@ class DatabaseAssistant {
     async createProjectInDB(oid, name, port, containerId) {
         if (await this.projectExists(oid, name)) throw "Project already exists.";
 
-        await this._dbp.run("INSERT INTO projects (name, owner, containerId, port) VALUES ($name, $oid, $containerId, $port)", { $name : name, $owner : owner, $containerId : containerId, $port : port });
+        await this._dbp.run("INSERT INTO projects (name, owner, containerId, port, createTimeUtc) VALUES ($name, $oid, $containerId, $port, $createTime)", { $name : name, $owner : owner, $containerId : containerId, $port : port, $createTime : new Date().toISOString() });
         return await this._dbp.get("SELECT id FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name });
     }
 

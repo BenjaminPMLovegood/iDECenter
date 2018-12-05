@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BenjaminPMLovegood/iDECenter.git"
+    "url": "git+https://github.com/iDECenter/iDECenter.git"
   },
   "keywords": [
     "WebIDE",
@@ -18,9 +18,9 @@
   "author": "Benjamin P.M. Lovegood",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/BenjaminPMLovegood/iDECenter/issues"
+    "url": "https://github.com/iDECenter/iDECenter/issues"
   },
-  "homepage": "https://github.com/BenjaminPMLovegood/iDECenter#readme",
+  "homepage": "https://github.com/iDECenter/iDECenter#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
