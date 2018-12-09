@@ -39,7 +39,7 @@ module.exports = function(env) {
         dba.createProjectInDB(uid, projectName, port, cid).then(result => {
             return res.json({ succeeded : true });
         }).catch(anything => {
-            return res.json({ succeeded : false, error : "Failed to write db." });
+            return res.json({ succeeded : false, error : "Failed to write db." + " " + anything });
         });
     });
 

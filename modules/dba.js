@@ -38,7 +38,7 @@ class DatabaseAssistant {
     async createProjectInDB(oid, name, port, containerId) {
         if (await this.projectExists(oid, name)) throw "Project already exists.";
 
-        await this._dbp.run("INSERT INTO projects (name, owner, containerId, port, createTimeUtc) VALUES ($name, $oid, $containerId, $port, $createTime)", { $name : name, $owner : owner, $containerId : containerId, $port : port, $createTime : new Date().toISOString() });
+        await this._dbp.run("INSERT INTO projects (name, owner, containerId, port, createTimeUtc) VALUES ($name, $oid, $containerId, $port, $createTime)", { $name : name, $oid : oid, $containerId : containerId, $port : port, $createTime : new Date().toISOString() });
         return await this._dbp.get("SELECT id FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name });
     }
 
