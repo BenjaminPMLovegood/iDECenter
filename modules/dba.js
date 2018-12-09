@@ -28,7 +28,7 @@ class DatabaseAssistant {
     }
 
     async projectExists(oid, name) {
-        return (await this._dbp.get("SELECT * FROM projects WHERE owner = $oid AND name = $name", { $pid : oid, $name : name })) != undefined;
+        return (await this._dbp.get("SELECT * FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name })) != undefined;
     }
 
     async getMaxPid() {
