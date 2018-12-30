@@ -1,78 +1,43 @@
 {
-    "daemonport" : "3154",
-    "daemonpath" : "iDaemonCenter.dll",
-    "database" : "db.sqlite3",
-    "port" : "4040",
-    "session" : {
-        "maxAge" : 1800000,
-        "secret" : "gouliguojia",
-        "cookie" : "idecsid"
+    "daemonport": "3154",
+    "daemonpath": "iDaemonCenter.dll",
+    "database": "db.sqlite3",
+    "port": "4040",
+    "session": {
+        "maxAge": 1800000,
+        "secret": "gouliguojia",
+        "cookie": "idecsid"
     },
-    "c9portbase" : "4396",
-    "workspace" : "./workspace/",
-    "archive" : "./archive/",
-    "allowregister" : false,
-    "templates" : [
-        {
-            "name" : "STM32F1",
-            "root" : {
-                "path" : "./template/template_stm32f1",
-                "shared" : false,
-                "shared_comment" : "false is default"
-            }
-        },
-        {
-            "name" : "STM32F4",
-            "root" : {
-                "path" : "./template/template_stm32f4"
-            }
-        },
-        {
-            "name" : "STM32F1_mbed",
-            "root" : {
-                "path" : "./template/mbed-stm32f1",
-                "sub" : {
-                    "mbed-os" : {
-                        "path" : "./template/mbed-stm32f1/mbed-os",
-                        "shared" : true,
-                        "readonly" : true,
-                        "readonly_comment" : "true is default for shared = true, and false is default to shared = false"
-                    },
-                    "BUILD" : {
-                        "path" : "./template/mbed-stm32f1/BUILD",
-                        "sub" : {
-                            "mbed-os" : {
-                                "path" : "./template/mbed-stm32f1/BUILD/mbed-os",
-                                "shared" : true,
-                                "readonly" : true
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        {
-            "name" : "STM32F4_mbed",
-            "root" : {
-                "path" : "./template/mbed-stm32f4",
-                "sub" : {
-                    "mbed-os" : {
-                        "path" : "./template/mbed-stm32f4/mbed-os",
-                        "shared" : true,
-                        "readonly" : true
-                    },
-                    "BUILD" : {
-                        "path" : "./template/mbed-stm32f4/BUILD",
-                        "sub" : {
-                            "mbed-os" : {
-                                "path" : "./template/mbed-stm32f4/BUILD/mbed-os",
-                                "shared" : true,
-                                "readonly" : true
-                            }
-                        }
-                    }
-                }
-            }
+    "c9portbase": "4396",
+    "workspace": "./workspace/",
+    "archive": "./archive/",
+    "allowregister": false,
+    "following_is_new_config": "",
+    "daemon": {
+        "port": 3154,
+        "path": "iDaemonCenter.dll"
+    },
+    "app": {
+        "database": "db.sqlite3",
+        "port": 4040,
+        "session": {
+            "secret": "gouliguojia",
+            "name": "idecsid",
+            "cookie": {
+                "maxAge": 1800000,
+                "httpOnly": true
+            },
+            "resave": true,
+            "rolling": true,
+            "saveUninitialized": false
         }
-    ]
+    },
+    "projects": {
+        "c9baseport": 4396,
+        "workspace": "./workspace/",
+        "archive": "./archive/"
+    },
+    "website": {
+        "allowregister": false
+    }
 }

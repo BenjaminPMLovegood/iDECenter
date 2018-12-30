@@ -6,16 +6,16 @@ module.exports = function(env) {
     var config = env.config;
 
     router.get("/index", function(req, res) {
-        render("pagesuper/index", req, res, { title : "Control panel", allowregister : config.allowregister });
+        render("pagesuper/index", req, res, { title : "Control panel", allowregister : config.get("website.allowregister") });
     });
 
     router.get("/enable_register", function(req, res) {
-        config.allowregister = true;
+        config.set("website.allowregister", true);
         res.redirect("/pagesuper/index");
     });
 
     router.get("/disable_register", function(req, res) {
-        config.allowregister = false;
+        config.set("website.allowregister", false);
         res.redirect("/pagesuper/index");
     });
 

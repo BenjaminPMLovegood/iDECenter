@@ -2,7 +2,7 @@ const sqlite3 = require("sqlite3");
 const fs = require("fs");
 
 const config = require("./config.json");
-const dbfile = config.database || "db.sqlite3";
+const dbfile = config.app.database || "db.sqlite3";
 
 if (fs.exists(dbfile)) {
     console.log("db already exists.");

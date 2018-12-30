@@ -29,7 +29,7 @@ module.exports = function(env) {
         fmaps = fmaps.map(m => { return { host : m.host, docker : ph.getPath(m.docker), readonly : m.readonly }});
         fmaps.push({ host : authDir, docker : "/root/c9auth", readonly : true });
 
-        var port = config.c9portbase - 0 + await dba.getMaxPid() + 1;
+        var port = config.get("projects.c9baseport") - 0 + await dba.getMaxPid() + 1;
     
         var cid = await docker.create("idec/idec:latest", [{ docker : 8080, host : port }], fmaps, [ "--ulimit nproc=1024:1024" ])
         if (!cid) {

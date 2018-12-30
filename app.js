@@ -15,6 +15,7 @@ const
     WorkspaceManager = require("./modules/workspace_man"),
     RouterLogger = require("./modules/router_logger"),
     LocalStrategy = require("passport-local").Strategy,
+    Config = require("json-conf-m").Config,
     GetRequester = require("./modules/get_requester"),
     TemplateCollection = require("./modules/template"),
     DatabaseAssistance = require("./modules/dba"),
@@ -23,10 +24,13 @@ const
 const app = express();
 
 // config
-const config = Object.assign({}, require("./config.json"));
+const config = Config.FromFile("./config.json");
+const templates = Config.FromFile("./templates.json").subconfig("templates");
+
+const appConfig = config.subconfig("app");
 
 // db
-const db = new sqlite3.Database(config.database);
+const db = new sqlite3.Database(app.get("database") || "db.sqlite3");
 
 // env
 const env = { config : config, db : db, passport : passport };
@@ -75,11 +79,11 @@ const loggers = {
 };
 
 env.loggers = loggers;
-loggers.default.info("logger ready");
+loggers.default.info("loggers ready");
 
 // daemon
 loggers.default.info("launching daemon client...");
-const daemonp = require("child_process").spawn("dotnet", [config.daemonpath, "./config.json"] , { stdio : "pipe" });
+const daemonp = require("child_process").spawn("dotnet", [ config.get("daemon.path"), "./config.json" ] , { stdio : "pipe" });
 
 daemonp.on("exit", (code, signal) => {
     loggers.default.info("daemon exit with code", code);
@@ -93,8 +97,8 @@ env.daemon = new Daemon(daemonp, env);
 env.docker = Docker(env);
 env.ph = new PathHelper(__dirname);
 env.dba = new DatabaseAssistance(env);
-env.templates = new TemplateCollection(config.templates, env);
-env.workspaceManager = new WorkspaceManager(env.ph.getPath(config.workspace), env.ph.getPath(config.archive), env);
+env.templates = new TemplateCollection(templates, env);
+env.workspaceManager = new WorkspaceManager(env.ph.getPath(config.get("projects.workspace")), env.ph.getPath(config.get("projects.archive")), env);
 
 env.docker.startRefresher();
 
@@ -109,17 +113,7 @@ app.set("view engine", "jade");
 // middlewares
 loggers.default.info("loading express middlewares...");
 app.use(cookieParser());
-app.use(exsession({
-    secret : config.session.secret,
-    name : config.session.cookie,
-    cookie : {
-        maxAge : config.session.maxAge,
-        httpOnly : true
-    },
-    resave : true,
-    rolling : true,
-    saveUninitialized : false
-}));
+app.use(exsession(appConfig.get("session")));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
@@ -198,14 +192,21 @@ app.use("/apisuper", require("./routes/apisuper")(env));
 app.all("*", (req, res) => res.status(404).send("Ich kann es nicht finden."))
 
 // run! app, run!
-app.listen(config.port, function() {
-    loggers.default.info("listening on %d...", config.port);
+var port = appConfig.get("port") - 0;
+app.listen(port, function() {
+    loggers.default.info("listening on %d...", port);
 });
 
 process.on('exit', function() {
+    loggers.default.info("server exiting...");
+    loggers.default.info("saving config...");
+    config.save();
+    loggers.default.info("config saved, closing other modules...");
+
     if (env.docker) env.docker.closeRefresher();
     daemon.close();
     db.close();
-    loggers.default.info("server exiting, closing logger, goodbye");
+
+    loggers.default.info("closing logger, goodbye");
     log4js.shutdown();
 });

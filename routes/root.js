@@ -16,13 +16,18 @@ module.exports = function(env) {
 
     router.get("/register", function(req, res) {
         if (req.isAuthenticated()) return res.redirect("/");
-        if (!config.allowregister) return render("register_disabled", req, res, { title : "Register" });
+        if (!config.get("website.allowregister")) return render("register_disabled", req, res, { title : "Register" });
         render("register", req, res, { title : "Register" });
     });
     
     router.post("/register_gate", function(req, res) {
         if (req.isAuthenticated()) {
-            req.flash("error", "logged in");
+            req.flash("error", "already logged in");
+            res.redirect("/");
+        }
+
+        if (!config.get("website.allowregister")) {
+            req.flash("error", "register disabled");
             res.redirect("/");
         }
 

@@ -1,0 +1,65 @@
+{
+    "templates" : {
+        "STM32F1" : {
+            "name" : "STM32F1",
+            "root" : {
+                "path" : "./template/template_stm32f1",
+                "shared" : false,
+                "shared_comment" : "false is default"
+            }
+        },
+        "STM32F4" : {
+            "name" : "STM32F4",
+            "root" : {
+                "path" : "./template/template_stm32f4"
+            }
+        },
+        "STM32F1_mbed" : {
+            "name" : "STM32F1_mbed",
+            "root" : {
+                "path" : "./template/mbed-stm32f1",
+                "sub" : {
+                    "mbed-os" : {
+                        "path" : "./template/mbed-stm32f1/mbed-os",
+                        "shared" : true,
+                        "readonly" : true,
+                        "readonly_comment" : "true is default for shared = true, and false is default when shared = false"
+                    },
+                    "BUILD" : {
+                        "path" : "./template/mbed-stm32f1/BUILD",
+                        "sub" : {
+                            "mbed-os" : {
+                                "path" : "./template/mbed-stm32f1/BUILD/mbed-os",
+                                "shared" : true,
+                                "readonly" : true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "STM32F4_mbed" : {
+            "name" : "STM32F4_mbed",
+            "root" : {
+                "path" : "./template/mbed-stm32f4",
+                "sub" : {
+                    "mbed-os" : {
+                        "path" : "./template/mbed-stm32f4/mbed-os",
+                        "shared" : true,
+                        "readonly" : true
+                    },
+                    "BUILD" : {
+                        "path" : "./template/mbed-stm32f4/BUILD",
+                        "sub" : {
+                            "mbed-os" : {
+                                "path" : "./template/mbed-stm32f4/BUILD/mbed-os",
+                                "shared" : true,
+                                "readonly" : true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

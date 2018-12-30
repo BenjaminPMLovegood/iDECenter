@@ -1,15 +1,14 @@
 class TemplateCollection {
     constructor(templates, env) {
+        this._templatesConf = templates;
         this._templates = {};
         this._pathHelper = env.ph;
         this._daemon = env.daemon;
 
-        for (var i in templates) {
-            var v = templates[i];
+        for (var i in templates.getAll()) {
+            var v = templates.get(i);
             this._templates[v.name] = this._processNode(v.root);
         }
-
-        this._namesCache = templates.map(temp => temp.name);
     }
 
     _processNode(node) {
@@ -25,11 +24,16 @@ class TemplateCollection {
     }
 
     names() {
-        return this._namesCache;
+        return Object.keys(this._templates);
     }
 
     templateExists(templateName) {
         return templateName in this._templates;
+    }
+
+    add(v) {
+        this._templatesConf.set(v.name, v);
+        this._templates[v.name] = this._processNode(v.root);
     }
 
     async instantiateProject(templateName, projectDir) {
