@@ -108,7 +108,7 @@ loggers.default.info("modules ready");
 loggers.default.info("configuring app...");
 app.set("trust proxy", true);
 app.set("views", __dirname + "/views");
-app.set("view engine", "jade");
+app.set("view engine", "pug");
 
 // middlewares
 loggers.default.info("loading express middlewares...");
