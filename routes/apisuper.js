@@ -1,10 +1,12 @@
 const util = require("util");
 
 const express = require("express");
+const multer = require("multer");
 module.exports = function(env) {
     var router = express.Router();
     var docker = env.docker;
     var dba = env.dba;
+    var m = multer({ dest : env.config.get("website.templateDir") });
 
     // user management
     router.post("/add_user", function(req, res) {
@@ -41,10 +43,15 @@ module.exports = function(env) {
         res.json(await dba.getAllUsers());
     });
 
+    router.post("/add_template", m.fields([{ name : "config", maxCount : 1 }, { name : "archive", maxCount : 1 }]), async function(req, res) {
+        console.log(req.files["config"][0], req.files["archive"][0]);
+        res.json({ succeeded : true });
+    });
+
     // shutdown
     router.all("/shutdown", function(req, res) {
         process.exit(0);
-    })
+    });
 
     return router;
 }

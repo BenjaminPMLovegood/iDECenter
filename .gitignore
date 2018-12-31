@@ -95,3 +95,5 @@ iDaemonCenter.*
 
 iDaemonCenter/
 iDockerCenter/
+
+tmp/

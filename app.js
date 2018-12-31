@@ -200,7 +200,7 @@ app.listen(port, function() {
 process.on('exit', function() {
     loggers.default.info("server exiting...");
     loggers.default.info("saving config...");
-    config.save();
+    config.save(true);
     loggers.default.info("config saved, closing other modules...");
 
     if (env.docker) env.docker.closeRefresher();

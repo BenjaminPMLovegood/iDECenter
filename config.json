@@ -38,6 +38,7 @@
         "archive": "./archive/"
     },
     "website": {
-        "allowregister": false
+        "allowregister": true,
+        "templateDir": "tmp"
     }
 }

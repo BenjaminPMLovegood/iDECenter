@@ -1,0 +1,14 @@
+extends ../1-5
+
+block left
+    h1 Add a template
+
+block right
+    form(role="form", action="/apisuper/add_template", method="post", enctype="multipart/form-data")
+        .form-group
+            label(for="config") Configuration json file
+            input.form-control#config(type="file", name="config", accept="application/json")
+        .form-group
+            label(for="archive") Archive tar file
+            input.form-control#tar(type="file", name="archive", accept="application/x-tar")
+        button.btn.btn-primary(type="submit") Submit

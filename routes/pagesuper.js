@@ -27,5 +27,9 @@ module.exports = function(env) {
         render("pagesuper/users", req, res, { title : "Manage users" });
     });
 
+    router.get("/add_template", function(req, res) {
+        render("pagesuper/add_template", req, res, { title : "Add template" });
+    });
+
     return router;
 }
