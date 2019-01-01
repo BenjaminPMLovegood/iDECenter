@@ -33,6 +33,7 @@ class TemplateCollection {
 
     add(v) {
         this._templatesConf.set(v.name, v);
+        this._templatesConf.save(true);
         this._templates[v.name] = this._processNode(v.root);
     }
 

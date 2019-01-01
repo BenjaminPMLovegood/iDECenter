@@ -1,11 +1,14 @@
 const util = require("util");
-
+const fs = require("fs");
 const express = require("express");
 const multer = require("multer");
+
 module.exports = function(env) {
     var router = express.Router();
     var docker = env.docker;
+    var daemon = env.daemon;
     var dba = env.dba;
+    var templates = env.templates; 
     var m = multer({ dest : env.config.get("website.templateDir") });
 
     // user management
@@ -44,8 +47,21 @@ module.exports = function(env) {
     });
 
     router.post("/add_template", m.fields([{ name : "config", maxCount : 1 }, { name : "archive", maxCount : 1 }]), async function(req, res) {
-        console.log(req.files["config"][0], req.files["archive"][0]);
-        res.json({ succeeded : true });
+        fs.readFile(req.files["config"][0].path, (err, data) => {
+            if (err) res.json({ succeeded : false, error : err });
+
+            var config = JSON.parse(data.toString());
+            var name = config.name;
+            
+            daemon.acall("projmgr", "extracttar", { path : req.files["archive"][0].path, target : "./template/" + name }).then(result => {
+                console.log(result);
+                if (result.succeeded) {
+                    console.log("success!");
+                    templates.add(config);
+                }
+                res.redirect("/pagesuper/index");
+            });
+        })
     });
 
     // shutdown

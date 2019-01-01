@@ -38,7 +38,7 @@
         "archive": "./archive/"
     },
     "website": {
-        "allowregister": true,
+        "allowregister": false,
         "templateDir": "tmp"
     }
 }

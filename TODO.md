@@ -7,9 +7,9 @@ TODO original
 
 TODO 2018/08/30
 - [x] ui.
-- [ ] *ongoing* log system.
-- [ ] admin interfaces and pages.
-- [ ] better async codes.
+- [x] log system.
+- [x] admin interfaces and pages.
+- [x] better async codes.
 - [x] a integrated install script.
 - [ ] ~~storage inspector. (workspaces and docker containers)~~
 - [ ] implement storage inspector in daemon.
@@ -18,7 +18,11 @@ TODO 2018/09/04
 - [x] a daemon for file io and docker operations.
 
 TODO 2018/09/19
-- [ ] a united error report system on webpages (flash included)
+- [x] a united error report system on webpages (flash included)
 
 TODO 2018/09/23
 - [ ] extract templates to a new repository.
+
+TODO 2019/01/01
+- [ ] specify node version using n.
+- [ ] rewrite docker image and it's builder, collecting group info when building, instead of using a magic number. It will be no longer possible to use a pre-built image.
