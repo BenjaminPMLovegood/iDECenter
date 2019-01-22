@@ -1,11 +1,11 @@
-const express = require("express");
-const nameCheck = require("../scripts/check_username");
-const pathHelper = require("../modules/path_helper");
+import { Router } from "express";
+import { checkProjectName } from "../modules/check_username";
+import PathHelper from "../modules/path_helper";
 
-const ph = new pathHelper("/workspace/");
+const ph = new PathHelper("/workspace/");
 
-module.exports = function(env) {
-    var router = express.Router();
+export default function(env) {
+    var router = Router();
     var templates = env.templates, wm = env.workspaceManager;
     var config = env.config;
     var docker = env.docker;
@@ -17,7 +17,7 @@ module.exports = function(env) {
         var template = req.body.template || "$a invalid template name$";
         var projectName = req.body.project || "$a invalid project name$";
 
-        if (!nameCheck.checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
+        if (!checkProjectName(projectName)) return res.json({ succeeded : false, error : "Invalid project name." });
         if (!templates.templateExists(template)) return res.json({ succeeded : false, error : "Template does not exists." });
 
         if (await dba.projectExists(uid, projectName)) return res.json({ succeeded : false, error : "Project already exists." });

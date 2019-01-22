@@ -1,13 +1,21 @@
-const sqlitePromise = require("./sqlite_promise");
-const serverSalt = require("./server_salt");
-const sha1 = require("../scripts/sha1");
-const usernameCheck = require("../scripts/check_username");
+import { Database } from "sqlite3";
+import { Logger } from "log4js";
 
-class DatabaseAssistant {
-    constructor(env) {
-        this._db = env.db;
-        this._dbp = sqlitePromise(this._db, env.loggers.database);
-        this._docker = env.docker;
+import sqlitePromise, { DatabasePromised } from "./sqlite_promise";
+import serverSalt from "./server_salt";
+import { hex_sha1 as sha1 } from "./sha1";
+import { checkUsername as usernameCheck } from "./check_username";
+import Docker from "./docker"
+
+export default class DatabaseAssistant {
+    _db: Database;
+    _dbp: DatabasePromised;
+    _docker: Docker;
+
+    constructor(db: Database, logger: Logger, docker: Docker) {
+        this._db = db;
+        this._dbp = sqlitePromise(this._db, logger);
+        this._docker = docker;
     }
 
     // projects
@@ -31,7 +39,7 @@ class DatabaseAssistant {
         return (await this._dbp.get("SELECT * FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name })) != undefined;
     }
 
-    async getMaxPid() {
+    async getMaxPid(): Promise<number> {
         return (await this._dbp.get("SELECT MAX(id) AS maxpid FROM projects")).maxpid;
     }
 
@@ -42,7 +50,7 @@ class DatabaseAssistant {
         return await this._dbp.get("SELECT id FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name });
     }
 
-    async deleteProjectInDB(pid) {
+    async deleteProjectInDB(pid: number): Promise<void> {
         await this._dbp.run("DELETE FROM projects WHERE id = $pid", { $pid : pid });
         return true;
     }

@@ -1,4 +1,4 @@
-class TemplateCollection {
+export default class TemplateCollection {
     constructor(templates, env) {
         this._templatesConf = templates;
         this._templates = {};
@@ -54,5 +54,3 @@ class TemplateCollection {
         });
     }
 }
-
-module.exports = TemplateCollection;
