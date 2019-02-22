@@ -7,6 +7,8 @@ import { hex_sha1 as sha1 } from "./sha1";
 import { checkUsername as usernameCheck } from "./check_username";
 import Docker from "./docker"
 
+import { Project, User } from "./model"
+
 export default class DatabaseAssistant {
     _db: Database;
     _dbp: DatabasePromised;
@@ -77,7 +79,7 @@ export default class DatabaseAssistant {
         return (await this._dbp.get("SELECT * FROM users WHERE username = $username", { $username : username })) != undefined;
     }
 
-    async getUidByUsername(username) {
+    async getUidByUsername(username: string): Promise<number | undefined> {
         var userinfo = await this._dbp.get("SELECT id FROM users WHERE username = $username", { $username : username });
 
         if (userinfo) {
@@ -92,7 +94,7 @@ export default class DatabaseAssistant {
         return Object.assign({}, userinfo);
     }
 
-    async addUser(username, passwordBrowserSalted, isSuper, c9password) {
+    async addUser(username: string, passwordBrowserSalted: string, isSuper: boolean, c9password: string): Promise<boolean> {
         if (await this.usernameExists(username)) throw "User already exists";
 
         var passwordSalted = sha1(serverSalt(username, passwordBrowserSalted));
