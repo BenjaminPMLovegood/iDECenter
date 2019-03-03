@@ -1,45 +1,24 @@
-extends ../1-3
+extends ../temp
 
 block scripts
     script.
         window.proj = undefined;
         window.projDiv = undefined;
+        window.renderer = getTableRenderer({
+            columns : [
+                { title : "Pid", key : "id" },
+                { title : "Name", key : "name" },
+                { title : "Status", renderer : p => `<span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>` },
+                { title : "Operations", renderer : p => `${p.running ? `<button class="btn btn-primary" onclick="window.location.href='/pages/c9/${p.id}'">Open</button>` : ""} ${!p.running ? `<button class="btn btn-success" onclick="launchProject(${p.id})">Launch project</button>` : `<button class="btn btn-danger" onclick="stopProject(${p.id})">Stop</button>`}` },
+                { titleX : '<th class="text-danger">Dangerous Zone</th>', renderer : p => `<button class="btn btn-danger" onclick="deleteProject(${p.id}, false)">Delete</button> <button class="btn btn-warning" onclick="deleteProject(${p.id}, true)">Archive</button>` }
+            ]
+        });
 
         function dispProjList(list) {
             if (window.proj) window.proj.remove();
             if (!window.projDiv) window.projDiv = $("div#proj")[0];
 
-            window.proj = $("<table border='0' class='table'>");
-            window.proj.append($(`
-                <tr>
-                    <th>Pid</th>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Operations</th>
-                    <th class="text-danger">Dangerous Zone</th>
-                </tr>
-            `));
-            for (var i in list) {
-                var p = list[i];
-                window.proj.append($(`
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.name}</td>
-                        <td>
-                            <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
-                        </td>
-                        <td>
-                            ${p.running ? `<button class="btn btn-primary" onclick="window.location.href='/pages/c9/${p.id}'">Open</button>` : ""}
-                            ${!p.running ? `<button class="btn btn-success" onclick="launchProject(${p.id})">Launch project</button>` : `<button class="btn btn-danger" onclick="stopProject(${p.id})">Stop</button>`}
-                        </td>
-                        <td>
-                            <button class="btn btn-danger" onclick="deleteProject(${p.id}, false)">Delete</button>
-                            <button class="btn btn-warning" onclick="deleteProject(${p.id}, true)">Archive</button>
-                        </td>
-                    </tr>
-                `));
-            }
-
+            window.proj = $(renderer(list));
             window.proj.appendTo(window.projDiv);
         }
 
@@ -94,12 +73,14 @@ block scripts
             });
         }
 
-block left
-    h1 Projects
+block title
+    h1 List of projects
+
+block control
     button.btn#refresh(onclick="refreshButtonClicked()") Refresh
     | &nbsp;
-    button.btn(onclick="window.location.href='/pages/create_project';") Creat
+    button.btn(onclick="window.location.href='/pages/create_project';") Create
 
-block right
+block canvas
     #proj
     

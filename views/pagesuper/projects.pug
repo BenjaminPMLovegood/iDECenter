@@ -1,9 +1,21 @@
-extends ../1-5
+extends ../temp
 
 block scripts
     script.
         window.proj = undefined;
         window.projDiv = undefined;
+        window.renderer = getTableRenderer({
+            columns : [
+                { title : "id", key : "id" },
+                { title : "name", key : "name" },
+                { title : "owner", renderer : p => `${p.username}(${p.owner})` },
+                { title : "status", renderer : p => `<span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>` },
+                { title : "cid", renderer : p => `<span data-toggle="tooltip" data-placement="bottom" title="Click to copy full cid: '${p.containerId}'" onclick="$.toClipboard('${p.containerId}')">${p.containerId.substring(0, 7)}</span>` },
+                { title : "port", key : "port" },
+                { title : "op", renderer : p => `${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}` },
+                { title : "op dangerous", renderer : p => `<a href="javascript:void(0)" onclick="deleteProject(${p.id}, false)">Delete</a> <a href="javascript:void(0)" onclick="deleteProject(${p.id}, true)">Archive</a>`  }
+            ]
+        });
 
         $(function () { $("[data-toggle='tooltip']").tooltip(); });
 
@@ -11,42 +23,7 @@ block scripts
             if (window.proj) window.proj.remove();
             if (!window.projDiv) window.projDiv = $("div#proj")[0];
 
-            window.proj = $("<table border='0' class='table'>");
-            window.proj.append($(`
-                <tr>
-                    <th>id</th>
-                    <th>name</th>
-                    <th>owner</th>
-                    <th>status</th>
-                    <th>cid</th>
-                    <th>port</th>
-                    <th>op</th>
-                    <th>op dangerous</th>
-                </tr>
-            `));
-            for (var i in list) {
-                var p = list[i];
-                window.proj.append($(`
-                    <tr>
-                        <td>${p.id}</td>
-                        <td>${p.name}</td>
-                        <td>${p.username}(${p.owner})</td>
-                        <td>
-                            <span class="${p.running ? "text-success" : "text-danger"}">${p.running ? "Running" : "Stopped"}</span>
-                        </td>
-                        <td><span data-toggle="tooltip" data-placement="bottom" title="Click to copy full cid: '${p.containerId}'" onclick="$.toClipboard('${p.containerId}')">${p.containerId.substring(0, 7)}</span></td>
-                        <td>${p.port}</td>
-                        <td>
-                        ${!p.running ? `<a href="javascript:void(0)" onclick="launchProject(${p.id})">Launch</a>` : `<a href="javascript:void(0)" onclick="stopProject(${p.id})">Stop</a>`}
-                        </td>
-                        <td>
-                            <a href="javascript:void(0)" onclick="deleteProject(${p.id}, false)">Delete</a>
-                            <a href="javascript:void(0)" onclick="deleteProject(${p.id}, true)">Archive</a>
-                        </td>
-                    </tr>
-                `));
-            }
-
+            window.proj = $(renderer(list));
             window.proj.appendTo(window.projDiv);
         }
 
@@ -124,12 +101,13 @@ block scripts
             });
         }
 
-block left
-    h1 Projects
-    button.btn#refresh(onclick="refreshButtonClicked()") Refresh
+block title
+    h1 List of projects
 
-block right
+block control
+    button.btn#refresh(onclick="refreshButtonClicked()") Refresh
+    | &nbsp;
     button.btn.btn-primary#stopall(onclick="stopallButtonClicked()") Stop All
-    br
-    br
+
+block canvas
     #proj

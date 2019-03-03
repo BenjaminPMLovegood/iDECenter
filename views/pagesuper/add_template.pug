@@ -1,9 +1,9 @@
-extends ../1-5
+extends ../temp
 
-block left
+block title
     h1 Add a template
 
-block right
+block canvas
     form(role="form", action="/apisuper/add_template", method="post", enctype="multipart/form-data")
         .form-group
             label(for="config") Configuration json file
