@@ -7,7 +7,7 @@ import { hex_sha1 as sha1 } from "./sha1";
 import { checkUsername as usernameCheck } from "./check_username";
 import Docker from "./docker"
 
-import { Project, User } from "./model"
+import { Project, User, ProjectWithRunningInfo, isProject } from "./model"
 
 export default class DatabaseAssistant {
     _db: Database;
@@ -21,23 +21,23 @@ export default class DatabaseAssistant {
     }
 
     // projects
-    _addRunningInfoToProject(proj) {
+    _addRunningInfoToProject(proj: Project): ProjectWithRunningInfo {
         return Object.assign(proj, { running : this._docker.isCidRunning(proj.containerId) });
     }
 
-    async getAllProjects() {
-        return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = projects.owner")).map(row => this._addRunningInfoToProject(row));
+    async getAllProjects(): Promise<ProjectWithRunningInfo[]> {
+        return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = projects.owner")).filter(isProject).map(row => this._addRunningInfoToProject(row));
     }
 
-    async getUserProjects(oid) {
-        return (await this._dbp.all("SELECT * FROM projects WHERE owner = $oid", { $oid : oid })).map(row => this._addRunningInfoToProject(row));
+    async getUserProjects(oid: number): Promise<ProjectWithRunningInfo[]> {
+        return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = $oid AND projects.owner = $oid", { $oid : oid })).filter(isProject).map(row => this._addRunningInfoToProject(row));
     }
 
-    async getProjectByPid(pid) {
+    async getProjectByPid(pid: number): Promise<ProjectWithRunningInfo> {
         return this._addRunningInfoToProject(await this._dbp.get("SELECT * FROM projects WHERE id = $pid", { $pid : pid }));
     }
 
-    async projectExists(oid, name) {
+    async projectExists(oid: number, name: string): Promise<boolean> {
         return (await this._dbp.get("SELECT * FROM projects WHERE owner = $oid AND name = $name", { $oid : oid, $name : name })) != undefined;
     }
 
@@ -45,7 +45,7 @@ export default class DatabaseAssistant {
         return (await this._dbp.get("SELECT MAX(id) AS maxpid FROM projects")).maxpid;
     }
 
-    async createProjectInDB(oid, name, port, containerId) {
+    async createProjectInDB(oid: number, name: string, port: number, containerId: string): Promise<number> {
         if (await this.projectExists(oid, name)) throw "Project already exists.";
 
         await this._dbp.run("INSERT INTO projects (name, owner, containerId, port, createTimeUtc) VALUES ($name, $oid, $containerId, $port, $createTime)", { $name : name, $oid : oid, $containerId : containerId, $port : port, $createTime : new Date().toISOString() });
@@ -54,11 +54,10 @@ export default class DatabaseAssistant {
 
     async deleteProjectInDB(pid: number): Promise<void> {
         await this._dbp.run("DELETE FROM projects WHERE id = $pid", { $pid : pid });
-        return true;
     }
 
     // users
-    async verifyUser(username, passwordBrowserSalted) {
+    async verifyUser(username: string, passwordBrowserSalted: string): Promise<User> {
         if (!usernameCheck(username)) throw "Invalid username";
         var passwordSalted = sha1(serverSalt(username, passwordBrowserSalted));
 
@@ -71,11 +70,11 @@ export default class DatabaseAssistant {
         }
     }
 
-    async userExists(uid) {
+    async userExists(uid: number): Promise<boolean> {
         return (await this._dbp.get("SELECT * FROM users WHERE id = $uid", { $uid : uid })) != undefined;
     }
 
-    async usernameExists(username) {
+    async usernameExists(username: string): Promise<boolean> {
         return (await this._dbp.get("SELECT * FROM users WHERE username = $username", { $username : username })) != undefined;
     }
 
@@ -89,7 +88,7 @@ export default class DatabaseAssistant {
         }
     }
 
-    async getUserById(uid) {
+    async getUserById(uid: number): Promise<User> {
         var userinfo = await this._dbp.get("SELECT * FROM users WHERE id = $uid", { $uid : uid });
         return Object.assign({}, userinfo);
     }
@@ -103,12 +102,10 @@ export default class DatabaseAssistant {
         return true;
     }
 
-    async getAllUsers() {
+    async getAllUsers(): Promise<User[]> {
         return (await this._dbp.all("SELECT * FROM users")).map(function(row) {
             row.super = !!(row.super);
             return row;
         });
     }
 }
-
-module.exports = DatabaseAssistant;

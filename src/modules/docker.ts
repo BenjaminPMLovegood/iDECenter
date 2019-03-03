@@ -116,7 +116,7 @@ export default class Docker {
         return this._runningCids = (await this.ps()) || [];
     }
 
-    async isCidRunning(cid: string) {
+    isCidRunning(cid: string) {
         return this._runningCids.includes(cid);
     }
 

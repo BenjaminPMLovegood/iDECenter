@@ -2,6 +2,7 @@ export interface Project {
     id: number;
     name: string;
     owner: number;
+    username: string;
     containerId: string;
     port: number;
     createTimeUtc: string;
@@ -9,7 +10,7 @@ export interface Project {
 
 export interface User {
     id: number;
-    usename: string;
+    username: string;
     password: string;
     super: boolean;
     c9password: string;
@@ -17,5 +18,9 @@ export interface User {
 };
 
 export function isProject(x: object): x is Project {
-    return false;
+    return true;
+}
+
+export type ProjectWithRunningInfo = Project & {
+    running: boolean;
 }
