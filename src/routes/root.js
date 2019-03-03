@@ -8,6 +8,7 @@ module.exports = function(env) {
     var passport = env.passport;
     var docker = env.docker;
     var config = env.config;
+    var dba = env.dba;
 
     router.get("/", function(req, res) {
         if (req.isAuthenticated()) return res.redirect("/pages/dashboard");
@@ -40,7 +41,7 @@ module.exports = function(env) {
         }
 
         dba.addUser(username, password, false, ("" + (1000000 + Math.round(Math.random() * 1000000))).substring(1)).then(v => {
-            if (v.succeeded) {
+            if (v) {
                 res.redirect("/register_success");
             } else {
                 req.flash("error", v.error);

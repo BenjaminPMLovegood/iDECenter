@@ -1,28 +1,28 @@
-extends ../1-1-1-1
+extends ../temp
 
-block a
+block title
     h1 Control Panel
 
-block b
-    button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/projects"') Manage projects
-    br
-    button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/add_template"') Add template
-
-block c
-    button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/users"') Manage users
-    br
-    p Register:&nbsp;
-        strong
+block control
+    .row
+        .col-sm-4
+            button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/projects"') Manage projects
+            br
+            button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/add_template"') Add template
+        .col-sm-4
+            button.btn.btn-primary.btn-block(onclick='location.href="/pagesuper/users"') Manage users
+            br
+            p Register:&nbsp;
+                strong
+                    - if (allowregister) {
+                        span.text-success Enabled
+                    - } else {
+                        span.text-danger Disabled
+                    - }
             - if (allowregister) {
-                span.text-success Enabled
+                button.btn.btn-danger.btn-block(onclick='location.href="/pagesuper/disable_register"') Disable
             - } else {
-                span.text-danger Disabled
+                button.btn.btn-success.btn-block(onclick='location.href="/pagesuper/enable_register"') Enable
             - }
-    - if (allowregister) {
-        button.btn.btn-danger.btn-block(onclick='location.href="/pagesuper/disable_register"') Disable
-    - } else {
-        button.btn.btn-success.btn-block(onclick='location.href="/pagesuper/enable_register"') Enable
-    - }
-
-block d
-    button.btn.btn-danger.btn-block(onclick='location.href="/apisuper/shutdown"') Shutdown server
+        .col-sm-4
+            button.btn.btn-danger.btn-block(onclick='location.href="/apisuper/shutdown"') Shutdown server

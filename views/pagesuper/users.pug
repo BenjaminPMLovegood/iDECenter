@@ -1,4 +1,4 @@
-extends ../1-5
+extends ../temp
 
 block scripts
     script.
@@ -65,9 +65,11 @@ block scripts
             refreshUserList();
         }
 
-block left
-    h1 Users
+block title
+    h1 List of users
+
+block control
     button.btn#refresh(onclick="refreshButtonClicked()") Refresh
 
-block right
+block canvas
     #user
