@@ -1,6 +1,6 @@
 import { normalize, join } from "path";
 
-export default class PathHelper {
+export class PathHelper {
     _base: string;
 
     constructor(base: string) {

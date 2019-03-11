@@ -1,3 +1,3 @@
-var main = require("lib/app");
+var main = require("./lib/app").main;
 
 main();

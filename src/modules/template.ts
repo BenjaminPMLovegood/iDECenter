@@ -1,5 +1,5 @@
 import { Config } from "json-conf-m";
-import PathHelper from "./path_helper";
+import { PathHelper } from "./path_helper";
 import StdioDaemon from "./daemon";
 
 export interface Template {
@@ -16,7 +16,7 @@ export interface TemplateNode {
     }
 }
 
-export default class TemplateCollection {
+export class TemplateCollection {
     _templatesConf: Config;
     _pathHelper: PathHelper;
     _daemon: StdioDaemon;
@@ -46,28 +46,28 @@ export default class TemplateCollection {
         return node;
     }
 
-    names() {
+    names(): string[] {
         return Object.keys(this._templates);
     }
 
-    templateExists(templateName: string) {
+    templateExists(templateName: string): boolean {
         return templateName in this._templates;
     }
 
-    add(v: Template) {
+    add(v: Template): void {
         this._templatesConf.set(v.name, v);
         this._templatesConf.save(true);
         this._templates[v.name] = this._processNode(v.root);
     }
 
-    async instantiateProject(templateName: string, projectDir: string) {
+    async instantiateProject(templateName: string, projectDir: string): Promise<{ docker : string, host : string, readonly: boolean }[]> {
         return new Promise((resolve, reject) => {
             if (!this.templateExists(templateName)) reject("template not exists");
 
             var root = this._templates[templateName];
             var projectDirAbs = this._pathHelper.getPath(projectDir);
 
-            this._daemon.acallt<{ dirmap: any, error: any }>("projmgr", "instantiate", { root : root, target : projectDirAbs }).then(v => {
+            this._daemon.acallt<{ dirmap: { docker : string, host : string, readonly: boolean }[] | undefined, error: any }>("projmgr", "instantiate", { root : root, target : projectDirAbs }).then(v => {
                 if (v.dirmap) {
                     resolve(v.dirmap);
                 } else {

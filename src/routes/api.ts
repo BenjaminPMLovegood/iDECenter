@@ -1,10 +1,12 @@
-import { Router } from "express";
+import { Router, Request } from "express";
 import { checkProjectName } from "../modules/check_username";
-import PathHelper from "../modules/path_helper";
+import { PathHelper } from "../modules/path_helper";
+import { RoutesEnv } from "../modules/routes_env";
+import { checkSessionUser } from "../modules/routes_utils";
 
 const ph = new PathHelper("/workspace/");
 
-export default function(env) {
+export default function(env: RoutesEnv) {
     var router = Router();
     var templates = env.templates, wm = env.workspaceManager;
     var config = env.config;
@@ -13,7 +15,10 @@ export default function(env) {
 
     // todo: simplify this
     router.post("/create_project", async function(req, res) {
-        var uid = req.session.passport.user.id;
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+
+        var uid = user.id;
         var template = req.body.template || "$a invalid template name$";
         var projectName = req.body.project || "$a invalid project name$";
 
@@ -45,7 +50,9 @@ export default function(env) {
 
     // todo: make super user really super
     router.post("/launch_project", async function(req, res) {
-        var user = req.session.passport.user;
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+
         var uid = user.id;
         var pid = req.body.pid;
         
@@ -56,32 +63,36 @@ export default function(env) {
         if (info.running) return res.json({ succeeded : false, error : "Already running." });
 
         docker.start(info.containerId).then(result => {
-            if (!result) return res.json({ succeeded : false, error : result.error });
-
             docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
+        }).catch(error => {
+            return res.json({ succeeded : false, error : error });
         });
     });
 
     router.post("/stop_project", async function(req, res) {
-        var user = req.session.passport.user;
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+
         var uid = user.id;
         var pid = req.body.pid;
         
-        dba.getProjectByPid(pid).then(info => {
-            if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
-            if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
-            if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
+        var info = await dba.getProjectByPid(pid);
 
-            docker.kill(info.containerId).then(result => {
-                if (!result) return res.json({ succeeded : false, error : result.error });
+        if (!info) return res.json({ succeeded : false, error : "Project does not exists." });
+        if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
+        if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
 
-                docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
-            })
+        docker.kill(info.containerId).then(result => {
+            docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
+        }).catch(error => {
+            return res.json({ succeeded : false, error : error });
         });
     });
 
     router.post("/delete_project", async function(req, res) {
-        var user = req.session.passport.user;
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+
         var uid = user.id;
         var pid = req.body.pid || -1;
         var archive = req.body.archive || "false";
@@ -115,7 +126,9 @@ export default function(env) {
     });
 
     router.post("/get_projects", async function(req, res) {
-        res.json(await dba.getUserProjects(req.session.passport.user.id));
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+        res.json(await dba.getUserProjects(user.id));
     });
 
     // do nothing, just refresh cookie

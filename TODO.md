@@ -25,7 +25,7 @@ TODO 2018/09/23
 
 TODO 2019/01/01
 - [ ] specify node version using n.
-- [ ] rewrite docker image and it's builder, collecting group info when building, instead of using a magic number. It will be no longer possible to use a pre-built image.
+- [x] rewrite docker image and it's builder, collecting group info when building, instead of using a magic number. It will be no longer possible to use a pre-built image.
 
 TODO 2019/01/02
 - [ ] rewrite project in typescript.

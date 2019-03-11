@@ -11,7 +11,7 @@ interface EnsureDirParam {
     [ path: string ] : EnsureDirParam | string | boolean
 }
 
-export default class WorkspaceManager {
+export class WorkspaceManager {
     _workspace: string;
     _archive: string;
     _daemon: StdioDaemon;

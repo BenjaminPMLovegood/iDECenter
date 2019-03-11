@@ -20,7 +20,7 @@ export interface DirMapItem {
     readonly?: boolean;
 }
 
-export default class Docker {
+export class Docker {
     _daemon: Daemon;
     _runningCids: string[] = [];
 

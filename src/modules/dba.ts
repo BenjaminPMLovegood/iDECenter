@@ -5,11 +5,11 @@ import sqlitePromise, { DatabasePromised } from "./sqlite_promise";
 import serverSalt from "./server_salt";
 import { hex_sha1 as sha1 } from "./sha1";
 import { checkUsername as usernameCheck } from "./check_username";
-import Docker from "./docker"
+import { Docker } from "./docker"
 
 import { Project, User, ProjectWithRunningInfo, isProject } from "./model"
 
-export default class DatabaseAssistant {
+export class DatabaseAssistant {
     _db: Database;
     _dbp: DatabasePromised;
     _docker: Docker;
