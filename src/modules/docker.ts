@@ -1,6 +1,6 @@
 const dockerOpModuleName = "dockerop";
 
-import Daemon from "./daemon";
+import { StdioDaemon as Daemon } from "./daemon";
 import { setInterval } from "timers"; 
 
 interface DockerExecResponce<T> {

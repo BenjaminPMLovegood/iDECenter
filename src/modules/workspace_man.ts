@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import StdioDaemon from "./daemon";
+import { StdioDaemon } from "./daemon";
 
 interface EnsureDirResult { 
     path? : string,

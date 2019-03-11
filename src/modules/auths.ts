@@ -4,7 +4,7 @@ import { User } from "./model"
 import { Request, Response, NextFunction } from "express";
 import { checkSessionUser } from "./routes_utils";
 
-export default function(dba: DatabaseAssistant, violate: Logger, violateSuper: Logger) {
+export function Auths(dba: DatabaseAssistant, violate: Logger, violateSuper: Logger) {
     var isAuthenticated = function(req: Request, res: Response, next: NextFunction) {
         if (checkSessionUser(req) == undefined) {
             violate.info("%s is requested unauthenticatedly by", req.originalUrl, req.ip);
@@ -28,7 +28,7 @@ export default function(dba: DatabaseAssistant, violate: Logger, violateSuper: L
         var user: User | undefined;
         
         if ((user = checkSessionUser(req)) == undefined) {
-            violate.info("%s is requested unauthenticatedly by", req.originalUrl, req.ip);
+            violateSuper.info("%s is requested unauthenticatedly by", req.originalUrl, req.ip);
             req.flash("error", "You're not logged in.");
             res.redirect("/login");
         } else {
@@ -46,7 +46,7 @@ export default function(dba: DatabaseAssistant, violate: Logger, violateSuper: L
         var user: User | undefined;
         
         if ((user = checkSessionUser(req)) == undefined) {
-            violate.info("api %s is requested unauthenticatedly by", req.originalUrl, req.ip);
+            violateSuper.info("api %s is requested unauthenticatedly by", req.originalUrl, req.ip);
             res.status(403).json({ error : "Not logged in." });
         } else {
             if (!user.super) {

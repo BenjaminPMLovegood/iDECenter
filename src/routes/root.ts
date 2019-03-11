@@ -1,12 +1,12 @@
-const render = require("../modules/render");
-const checkUsername = require("../scripts/check_username");
-const serverSalt = require("../modules/server_salt");
+import { render } from "../modules/render";
+import { checkUsername } from "../modules/check_username";
 
-const express = require("express");
-module.exports = function(env) {
-    var router = express.Router();
+import { Router } from "express";
+import { RoutesEnv } from "../modules/routes_env";
+
+export default function(env: RoutesEnv) {
+    var router = Router();
     var passport = env.passport;
-    var docker = env.docker;
     var config = env.config;
     var dba = env.dba;
 
@@ -21,7 +21,7 @@ module.exports = function(env) {
         render("register", req, res, { title : "Register" });
     });
     
-    router.post("/register_gate", function(req, res) {
+    router.post("/register_gate", async function(req, res) {
         if (req.isAuthenticated()) {
             req.flash("error", "already logged in");
             res.redirect("/");
@@ -40,14 +40,13 @@ module.exports = function(env) {
             return res.redirect("/register");
         }
 
-        dba.addUser(username, password, false, ("" + (1000000 + Math.round(Math.random() * 1000000))).substring(1)).then(v => {
-            if (v) {
-                res.redirect("/register_success");
-            } else {
-                req.flash("error", v.error);
-                res.redirect("/register");
-            }
-        }); 
+        try {
+            await dba.addUser(username, password, false, ("" + (1000000 + Math.round(Math.random() * 1000000))).substring(1));
+            res.redirect("/register_success");
+        } catch (error) {
+            req.flash("error", error);
+            res.redirect("/register");
+        }
     });
 
     router.get("/register_success", function(req, res) {

@@ -1,8 +1,9 @@
-const render = require("../modules/render");
+import { render } from "../modules/render";
+import { Router } from "express";
+import { RoutesEnv } from "../modules/routes_env";
 
-const express = require("express");
-module.exports = function(env) {
-    var router = express.Router();
+export default function(env: RoutesEnv) {
+    var router = Router();
     var config = env.config;
 
     router.get("/index", function(req, res) {

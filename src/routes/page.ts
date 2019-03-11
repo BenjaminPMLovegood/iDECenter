@@ -1,8 +1,10 @@
-const render = require("../modules/render");
+import { render } from "../modules/render";
+import { Router } from "express";
+import { RoutesEnv } from "../modules/routes_env";
+import { checkSessionUser } from "../modules/routes_utils";
 
-const express = require("express");
-module.exports = function(env) {
-    var router = express.Router();
+export default function(env: RoutesEnv) {
+    var router = Router();
     var docker = env.docker;
     var dba = env.dba;
     
@@ -11,7 +13,10 @@ module.exports = function(env) {
     });
     
     router.get("/c9/:pid", function(req, res) {
-        var uid = req.session.passport.user.id;
+        var user = checkSessionUser(req);
+        if (user == undefined) return;
+        
+        var uid = user.id;
         var pid = req.params.pid;
 
         dba.getProjectByPid(pid).then(info => {

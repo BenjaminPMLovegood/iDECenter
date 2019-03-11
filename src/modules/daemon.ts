@@ -25,7 +25,7 @@ function isValidResponsePackage(pkg: any): pkg is ResponsePackage {
     return "module" in pkg && "token" in pkg && "args" in pkg;
 }
 
-export default class StdioDaemon {
+export class StdioDaemon {
     _buffer: string;
     _child: ChildProcess;
     _logger: Logger;

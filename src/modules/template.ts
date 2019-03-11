@@ -1,6 +1,6 @@
 import { Config } from "json-conf-m";
 import { PathHelper } from "./path_helper";
-import StdioDaemon from "./daemon";
+import { StdioDaemon } from "./daemon";
 
 export interface Template {
     name: string;
