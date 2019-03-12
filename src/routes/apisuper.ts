@@ -2,7 +2,7 @@ import { format } from "util";
 import { readFile } from "fs";
 import { Router } from "express";
 import { RoutesEnv } from "../modules/routes_env";
-import multer from "multer";
+import * as multer from "multer";
 
 export default function(env: RoutesEnv) {
     var router = Router();

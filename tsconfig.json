@@ -5,8 +5,7 @@
       "declaration": true,
       "outDir": "./lib",
       "strict": true,
-      "rootDir": "src",
-      "esModuleInterop": true
+      "rootDir": "src"
     },
     "exclude": [ "lib", "node_modules" , "**/__tests__/*" ]
 }

@@ -1,9 +1,9 @@
-import express from "express";
-import exsession from "express-session";
-import flash from "express-flash";
-import rateLimit from "express-rate-limit";
-import bodyParser from 'body-parser';
-import cookieParser from "cookie-parser";
+import * as express from "express";
+import * as exsession from "express-session";
+import flash = require("express-flash");
+import * as rateLimit from "express-rate-limit";
+import * as bodyParser from 'body-parser';
+import * as cookieParser from "cookie-parser";
 import * as passport from "passport";
 import { Database } from "sqlite3";
 import * as log4js from "log4js";
@@ -20,6 +20,15 @@ import { TemplateCollection } from "./modules/template";
 import { DatabaseAssistant } from "./modules/dba";
 import { StdioDaemon } from "./modules/daemon";
 import { RoutesEnv } from "./modules/routes_env";
+import { LoadRoutes } from "./modules/routes_loader";
+
+export interface MainArgs {
+    workingDirectory?: string;
+}
+
+export function main(args: MainArgs) {
+
+const pwd = args.workingDirectory || __dirname;
 
 const app = express();
 
@@ -91,7 +100,7 @@ const daemon = new StdioDaemon(daemonp, loggers.daemon);
 
 // modules
 const docker = new Docker(daemon);
-const ph = new PathHelper(__dirname);
+const ph = new PathHelper(pwd);
 const dba = new DatabaseAssistant(db, loggers.database, docker);
 const templates = new TemplateCollection(templatesConfig, ph, daemon);
 const workspaceManager = new WorkspaceManager(ph.getPath(config.get("projects.workspace")), ph.getPath(config.get("projects.archive")), daemon);
@@ -115,7 +124,7 @@ loggers.default.info("modules ready");
 // log4js.configure app
 loggers.default.info("configuring app...");
 app.set("trust proxy", true);
-app.set("views", __dirname + "/views");
+app.set("views", ph.getPath("views"));
 app.set("view engine", "pug");
 
 // middlewares
@@ -180,21 +189,21 @@ const auths = Auths(env.dba, loggers.violate, loggers.violate_super);
 loggers.default.info("loading routes...");
 
 // app.use("/register_gate", rateLimit({ windowMs : 60 * 1000, max : 1 }));
-app.use("/", require("./routes/root")(env));
+app.use("/", LoadRoutes(__dirname + "/routes/root")(env));
 
 app.all("/api/*", auths.isAuthenticatedForApi);
 // disabled temporarily for debug
 // app.use("/api/create_project", rateLimit({ windowMs : 2 * 60 * 1000, max : 2 }));
-app.use("/api", require("./routes/api")(env));
+app.use("/api", LoadRoutes(__dirname + "/routes/api")(env));
 
 app.all("/pages/*", auths.isAuthenticated);
-app.use("/pages", require("./routes/page")(env));
+app.use("/pages", LoadRoutes(__dirname + "/routes/page")(env));
 
 app.all("/pagesuper/*", auths.isAuthenticatedSuper);
-app.use("/pagesuper", require("./routes/pagesuper")(env));
+app.use("/pagesuper", LoadRoutes(__dirname + "/routes/pagesuper")(env));
 
 app.all("/apisuper/*", auths.isAuthenticatedSuperForApi);
-app.use("/apisuper", require("./routes/apisuper")(env));
+app.use("/apisuper", LoadRoutes(__dirname + "/routes/apisuper")(env));
 
 // 404
 app.all("*", (req, res) => res.status(404).send("Ich kann es nicht finden."))
@@ -218,3 +227,4 @@ process.on('exit', function() {
     loggers.default.info("closing logger, goodbye");
     log4js.shutdown();
 });
+}

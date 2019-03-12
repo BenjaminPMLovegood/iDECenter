@@ -1,3 +1,3 @@
 var main = require("./lib/app").main;
 
-main();
+main({ workingDirectory : __dirname });
