@@ -1,5 +1,5 @@
 import { format } from "util";
-import { readFile } from "fs";
+import { promises } from "fs";
 import { Router } from "express";
 import { RoutesEnv } from "../modules/routes_env";
 import * as multer from "multer";
@@ -13,7 +13,7 @@ export default function(env: RoutesEnv) {
     var m = multer({ dest : env.config.get("website.templateDir") });
 
     // user management
-    router.post("/add_user", function(req, res) {
+    router.post("/add_user", async function(req, res) {
         var username = req.body.username;
         var password = req.body.password;
         var isSuper = req.body.super || false;
@@ -21,7 +21,7 @@ export default function(env: RoutesEnv) {
 
         if (username == undefined || password == undefined) return res.json({ succeeded : false, error : "Invalid parameters." });
 
-        dba.addUser(username, password, isSuper, c9password).then(v => res.json(v));
+        res.json(await dba.addUser(username, password, isSuper, c9password));
     });
 
     // projects management
@@ -52,20 +52,23 @@ export default function(env: RoutesEnv) {
         var files = req.files as { [fieldname: string]: Express.Multer.File[]; } ;
         var configFile = files["config"][0].path;
         var archiveFile = files["archive"][0].path;
-        readFile(configFile, (err, data) => {
-            if (err) res.json({ succeeded : false, error : err });
 
+        try {
+            var data = await promises.readFile(configFile);
             var config = JSON.parse(data.toString());
             var name = config.name;
-            
-            daemon.acallt<{ succeeded : boolean }>("projmgr", "extracttar", { path : archiveFile, target : "./template/" + name }).then(result => {
-                if (result.succeeded) {
-                    console.log("success!");
-                    templates.add(config);
-                }
-                res.redirect("/pagesuper/index");
-            });
-        })
+
+            var result = await daemon.acallt<{ succeeded : boolean }>("projmgr", "extracttar", { path : archiveFile, target : "./template/" + name });
+            if (result.succeeded) {
+                console.log("success!");
+                templates.add(config);
+            } else {
+                throw "failed to extract template";
+            }
+            res.redirect("/pagesuper/index");
+        } catch (err) {
+            return res.json({ succeeded : false, error : err });
+        }        
     });
 
     // shutdown

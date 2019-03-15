@@ -41,11 +41,12 @@ export default function(env: RoutesEnv) {
             return res.json({ succeeded : false, error : "Failed to create docker container." });
         }
 
-        dba.createProjectInDB(uid, projectName, port, cid).then(result => {
+        try {
+            await dba.createProjectInDB(uid, projectName, port, cid);
             return res.json({ succeeded : true });
-        }).catch(anything => {
-            return res.json({ succeeded : false, error : "Failed to write db." + " " + anything });
-        });
+        } catch (error) {
+            return res.json({ succeeded : false, error : "Failed to write db." + " " + error });
+        }
     });
 
     // todo: make super user really super
@@ -62,11 +63,13 @@ export default function(env: RoutesEnv) {
         if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
         if (info.running) return res.json({ succeeded : false, error : "Already running." });
 
-        docker.start(info.containerId).then(result => {
-            docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
-        }).catch(error => {
+        try {
+            await docker.start(info.containerId);
+            await docker.refreshRunningStatus();
+            return res.json({ succeeded : true });
+        } catch (error) {
             return res.json({ succeeded : false, error : error });
-        });
+        }
     });
 
     router.post("/stop_project", async function(req, res) {
@@ -82,11 +85,13 @@ export default function(env: RoutesEnv) {
         if (info.owner != uid && !user.super) return res.json({ succeeded : false, error : "You are not permitted to do this." });
         if (!info.running) return res.json({ succeeded : false, error : "Already stopped." });
 
-        docker.kill(info.containerId).then(result => {
-            docker.refreshRunningStatus().then(anything => res.json({ succeeded : true }));
-        }).catch(error => {
+        try {
+            await docker.kill(info.containerId);
+            await docker.refreshRunningStatus();
+            return res.json({ succeeded : true });
+        } catch (error) {
             return res.json({ succeeded : false, error : error });
-        });
+        }
     });
 
     router.post("/delete_project", async function(req, res) {
@@ -107,17 +112,21 @@ export default function(env: RoutesEnv) {
         var ownername = (await dba.getUserById(info.owner)).username;
 
         if (archive) {
-            wm.archiveProjectDir(ownername, projectName, pid).then(anything => {
-                dba.deleteProjectInDB(pid).then(anything => {
-                    res.json({ succeeded : true });
-                });
-            });
+            try {
+                await wm.archiveProjectDir(ownername, projectName, pid);
+                await dba.deleteProjectInDB(pid);
+                return res.json({ succeeded : true });
+            } catch (error) {
+                return res.json({ succeeded : false, error : error });
+            }
         } else {
-            wm.deleteProjectDir(ownername, projectName).then(anything => {
-                dba.deleteProjectInDB(pid).then(anything => {
-                    res.json({ succeeded : true });
-                });
-            });
+            try {
+                await wm.deleteProjectDir(ownername, projectName);
+                await dba.deleteProjectInDB(pid);
+                return res.json({ succeeded : true });
+            } catch (error) {
+                return res.json({ succeeded : false, error : error });
+            }
         }
     });
 

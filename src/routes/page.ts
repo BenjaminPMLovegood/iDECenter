@@ -12,28 +12,26 @@ export default function(env: RoutesEnv) {
         render("pages/dashboard", req, res, { title : "Dashboard" });
     });
     
-    router.get("/c9/:pid", function(req, res) {
+    router.get("/c9/:pid", async function(req, res) {
         var user = checkSessionUser(req);
         if (user == undefined) return;
         
         var uid = user.id;
         var pid = req.params.pid;
 
-        dba.getProjectByPid(pid).then(info => {
-            if (!info) return render("pages/c9wrapper_err", req, res, { err : "not_exists" });
+        var info = await dba.getProjectByPid(pid);
+        if (!info) return render("pages/c9wrapper_err", req, res, { err : "not_exists" });
 
-            var cid = info.containerId;
-            var oid = info.owner;
+        var cid = info.containerId;
+        var oid = info.owner;
 
-            if (oid != uid) return render("pages/c9wrapper_err", req, res, { err : "not_yours" });
+        if (oid != uid) return render("pages/c9wrapper_err", req, res, { err : "not_yours" });
 
-            if (!docker.isCidRunning(cid)) {
-                render("pages/c9wrapper_err", req, res, { err : "not_running" });
-            } else {
-                render("pages/c9wrapper", req, res, { port : info.port, title : info.name });
-            }
-        })
-
+        if (!docker.isCidRunning(cid)) {
+            render("pages/c9wrapper_err", req, res, { err : "not_running" });
+        } else {
+            render("pages/c9wrapper", req, res, { port : info.port, title : info.name });
+        }
     });
 
     router.get("/create_project", function(req, res) {

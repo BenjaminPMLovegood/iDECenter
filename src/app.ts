@@ -36,7 +36,7 @@ const app = express();
 const config = Config.FromFile("./config.json");
 const templatesConfig = Config.FromFile("./templates.json").subconfig("templates", { createIfNotExists : true });
 
-const appConfig: Config = config.subconfig("app", { createIfNotExists : true });
+const appConfig = config.subconfig("app", { createIfNotExists : true });
 
 // db
 const db = new Database(appConfig.get("database") || "db.sqlite3");
