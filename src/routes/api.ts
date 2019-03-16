@@ -3,6 +3,7 @@ import { checkProjectName } from "../modules/check_username";
 import { PathHelper } from "../modules/path_helper";
 import { RoutesEnv } from "../modules/routes_env";
 import { checkSessionUser } from "../modules/routes_utils";
+import { getProjectFilterOptionsFromRequest } from "../modules/model";
 
 const ph = new PathHelper("/workspace/");
 
@@ -137,7 +138,9 @@ export default function(env: RoutesEnv) {
     router.post("/get_projects", async function(req, res) {
         var user = checkSessionUser(req);
         if (user == undefined) return;
-        res.json(await dba.getUserProjects(user.id));
+
+        var filter = getProjectFilterOptionsFromRequest(req);
+        res.json(await dba.getUserProjects(user.id, filter));
     });
 
     // do nothing, just refresh cookie

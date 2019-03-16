@@ -7,7 +7,7 @@ import { hex_sha1 as sha1 } from "./sha1";
 import { checkUsername as usernameCheck } from "./check_username";
 import { Docker } from "./docker"
 
-import { Project, User, ProjectWithRunningInfo, isProject } from "./model"
+import { Project, User, ProjectWithRunningInfo, isProject, ProjectFilterOptions, getProjectFilterOptionsFromRequest } from "./model"
 
 export class DatabaseAssistant {
     _db: Database;
@@ -25,12 +25,29 @@ export class DatabaseAssistant {
         return Object.assign(proj, { running : this._docker.isCidRunning(proj.containerId) });
     }
 
-    async getAllProjects(): Promise<ProjectWithRunningInfo[]> {
-        return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = projects.owner")).filter(isProject).map(row => this._addRunningInfoToProject(row));
+    async getProjectWithFilter(filter?: ProjectFilterOptions): Promise<ProjectWithRunningInfo[]> {
+        var sql = "SELECT projects.*, users.username FROM projects, users WHERE users.id = projects.owner";
+        var param: { [ key: string ]: any } = {};
+
+        if (filter != undefined) {
+            if (filter.namePattern) { sql += " AND projects.name LIKE $pattern"; param["$pattern"] = `%${filter.namePattern}%`; }
+            if (filter.owner) { sql += " AND projects.owner = $oid"; param["$oid"] = filter.owner; }
+            if (filter.earliestCreateTimeUtc) { sql += " AND projects.createTimeUtc >= $timeA"; param["$timeA"] = filter.earliestCreateTimeUtc.toISOString(); }
+            if (filter.latestCreateTimeUtc) { sql += " AND projects.createTimeUtc <= $timeB"; param["$timeB"] = filter.latestCreateTimeUtc.toISOString(); }
+        }
+
+        return (await this._dbp.all(sql, param)).filter(isProject).map(row => this._addRunningInfoToProject(row));
     }
 
-    async getUserProjects(oid: number): Promise<ProjectWithRunningInfo[]> {
-        return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = $oid AND projects.owner = $oid", { $oid : oid })).filter(isProject).map(row => this._addRunningInfoToProject(row));
+    async getAllProjects(filter?: ProjectFilterOptions): Promise<ProjectWithRunningInfo[]> {
+        if (filter == undefined) return (await this._dbp.all("SELECT projects.*, users.username FROM projects, users WHERE users.id = projects.owner")).filter(isProject).map(row => this._addRunningInfoToProject(row));
+        return this.getProjectWithFilter(filter);
+    }
+
+    async getUserProjects(oid: number, filter?: ProjectFilterOptions): Promise<ProjectWithRunningInfo[]> {
+        if (filter == undefined) filter = {};
+        filter.owner = oid;
+        return await this.getProjectWithFilter(filter);
     }
 
     async getProjectByPid(pid: number): Promise<ProjectWithRunningInfo> {

@@ -3,6 +3,7 @@ import { promises } from "fs";
 import { Router } from "express";
 import { RoutesEnv } from "../modules/routes_env";
 import * as multer from "multer";
+import { getProjectFilterOptionsFromRequest } from "../modules/model";
 
 export default function(env: RoutesEnv) {
     var router = Router();
@@ -26,7 +27,7 @@ export default function(env: RoutesEnv) {
 
     // projects management
     router.post("/get_all_projects", async function(req, res) {
-        res.json(await dba.getAllProjects());
+        res.json(await dba.getAllProjects(getProjectFilterOptionsFromRequest(req)));
     });
 
     router.post("/stop_all_projects", async function(req, res) {
