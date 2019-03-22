@@ -1,6 +1,6 @@
 import { format } from "util";
-import { promises } from "fs";
 import { Router } from "express";
+import { readFilePromise } from "../modules/fs_promise";
 import { RoutesEnv } from "../modules/routes_env";
 import * as multer from "multer";
 import { getProjectFilterOptionsFromRequest } from "../modules/model";
@@ -54,8 +54,8 @@ export default function(env: RoutesEnv) {
         var configFile = files["config"][0].path;
         var archiveFile = files["archive"][0].path;
 
+        var data = await readFilePromise(configFile);
         try {
-            var data = await promises.readFile(configFile);
             var config = JSON.parse(data.toString());
             var name = config.name;
 
